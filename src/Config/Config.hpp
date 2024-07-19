@@ -7,28 +7,28 @@
 #include <vector>
 #include "../../includes.hpp"
 
-typedef struct ErrorPage
+struct ErrorPage
 {
 	std::string		code;
 	std::string		path;
-}				ErrorPage;
+};
 
-typedef struct Route
+struct Route
 {
 	std::string		method;
 	std::string		path;
 	std::string		location;
-}				Route;
+};
 
-typedef enum OpenCfg
+enum OpenCfg
 {
 	NONE,
 	HTTP,
 	SERVER,
-	ERROR,
+	ERRORS,
 	METHODS,
 	ROUTES
-}				OpenCfg;
+};
 
 class Config
 {
