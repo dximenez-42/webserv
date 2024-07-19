@@ -33,6 +33,7 @@ typedef enum OpenCfg
 class Config
 {
 	private:
+		std::string		_filename;
 		std::ifstream	_input;
 		std::vector<std::string>	_parse_errors;
 
@@ -59,6 +60,8 @@ class Config
 		void	parseErrors(std::vector<std::string>& split, unsigned int line_number);
 		void	parseMethods(std::vector<std::string>& split, unsigned int line_number);
 		void	parseRoutes(std::vector<std::string>& split, unsigned int line_number);
+
+		void	newError(unsigned int line_number, std::string error);
 
 		void	checkConfig();
 

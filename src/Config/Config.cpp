@@ -2,6 +2,7 @@
 
 Config::Config(std::string& filename)
 {
+	_filename = filename;
 	_input.open(filename, std::ifstream::in);
 	if (!_input.good() || !_input.is_open())
 		throw FileOpenException();
@@ -54,7 +55,7 @@ void	Config::parseHttp(std::vector<std::string>& split, unsigned int line_number
 	else if (split[0] == "error_log")
 		_error_log = split[1];
 	else
-		_parse_errors.push_back("Error in line " + std::to_string(line_number) + ": invalid field in http block");
+		return newError(line_number, "invalid field \"" + split[0] + "\" in http block");
 }
 
 void	Config::parseServer(std::vector<std::string>& split, unsigned int line_number)
@@ -94,10 +95,10 @@ void	Config::parseServer(std::vector<std::string>& split, unsigned int line_numb
 	{
 		_limit_body_size = std::stoi(split[1]);
 		if (_limit_body_size <= 0)
-			_parse_errors.push_back("Error in line " + std::to_string(line_number) + ": limit_body_size must be greater than 0");
+			return newError(line_number, "limit_body_size must be greater than 0");
 	}
 	else
-		_parse_errors.push_back("Error in line " + std::to_string(line_number) + ": invalid field in server block");
+		return newError(line_number, "invalid field \"" + split[0] + "\" in server block");
 }
 
 void	Config::parseErrors(std::vector<std::string>& split, unsigned int line_number)
@@ -147,13 +148,13 @@ void	Config::parseLine(std::string& line, unsigned int line_number)
 		if (split[0] == "http")
 			http = true;
 		else if (split[0] == "http" && http)
-			_parse_errors.push_back("Error in line " + std::to_string(line_number) + ": http block already defined");
+			return newError(line_number, "http block already defined");
 		else if (split[0] == "server" && http)
 			server = true;
 		else if (split[0] == "server" && !http)
-			_parse_errors.push_back("Error in line " + std::to_string(line_number) + ": server block must be defined in http block");
+			return newError(line_number, "server block must be defined in http block");
 		else if (split[0] == "server" && server)
-			_parse_errors.push_back("Error in line " + std::to_string(line_number) + ": server block already defined");
+			return newError(line_number, "server block already defined");
 		else if ((split[0] == "errors" || split[0] == "methods" || split[0] == "routes") && http && server)
 		{
 			if (split[0] == "errors")
@@ -164,9 +165,9 @@ void	Config::parseLine(std::string& line, unsigned int line_number)
 				routes = true;
 		}
 		else if ((split[0] == "errors" || split[0] == "methods" || split[0] == "routes") && !server)
-			_parse_errors.push_back("Error in line " + std::to_string(line_number) + ":" + split[0] + "block must be defined in server block");
+			return newError(line_number, "\"" + split[0] + "\" block must be defined in server block");
 		else
-			_parse_errors.push_back("Error in line " + std::to_string(line_number) + ": invalid block definition");
+			return newError(line_number, "invalid block \"" + split[0] + "\"");
 	}
 	else if (split.size() == 1 && split[0] == "}")
 	{
@@ -181,7 +182,7 @@ void	Config::parseLine(std::string& line, unsigned int line_number)
 		else if (!routes && !methods && !errors && http)
 			http = false;
 		else
-			_parse_errors.push_back("Error in line " + std::to_string(line_number) + ": invalid block closing");
+			return newError(line_number, "invalid block closing");
 	}
 	else if (split.size() >= 1 || split.size() <= 3)
 	{
@@ -198,13 +199,13 @@ void	Config::parseLine(std::string& line, unsigned int line_number)
 			else if (split.size() == 2)
 				parseServer(split, line_number);
 			else
-				_parse_errors.push_back("Error in line " + std::to_string(line_number) + ": invalid field in server block");
+				return newError(line_number, "invalid field \"" + split[0] + "\"");
 		}
 		else
-			_parse_errors.push_back("Error in line " + std::to_string(line_number) + ": invalid field in http block");
+			return newError(line_number, "invalid field \"" + split[0] + "\"");
 	}
 	else
-		_parse_errors.push_back("Error in line " + std::to_string(line_number) + ": invalid line format");
+		return newError(line_number, "invalid line format");
 }
 
 void	Config::parseConfig()
@@ -255,7 +256,7 @@ void	Config::checkConfig()
 	}
 	if (!errors.empty())
 	{
-		std::cerr << "Incomplete fields in configuration file:" << std::endl;
+		std::cerr << "Incomplete/missing fields in configuration file:" << std::endl;
 		for (size_t i = 0; i < errors.size(); i++)
 			std::cerr << "\t" << errors[i] << std::endl;
 	}
@@ -303,6 +304,11 @@ void	Config::printConfig()
 						<< "\", location: \"" << _routes[i].location << "\"" << std::endl;
 		}
 	}
+}
+
+void	Config::newError(unsigned int line_number, std::string error)
+{
+	_parse_errors.push_back("\033[1;37m" + _filename + ":" + std::to_string(line_number) + "\033[0m: \033[1;31merror:\033[0m " + error);
 }
 
 const char *Config::FileOpenException::what() const throw()
