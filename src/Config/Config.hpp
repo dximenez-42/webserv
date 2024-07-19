@@ -23,6 +23,7 @@ struct Route
 enum OpenCfg
 {
 	NONE,
+	BAD,
 	HTTP,
 	SERVER,
 	ERRORS,
@@ -53,6 +54,12 @@ class Config
 		std::vector<ErrorPage>		_error_pages;
 		std::vector<std::string>	_methods;
 		std::vector<Route>			_routes;
+
+		int		_http_location;
+		int		_server_location;
+		int		_errors_location;
+		int		_methods_location;
+		int		_routes_location;
 
 		void	parseLine(std::string& line, unsigned int line_number);
 

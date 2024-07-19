@@ -52,6 +52,11 @@ void	Config::parseHttp(std::vector<std::string>& split, unsigned int line_number
 {
 	if (split.size() != 2)
 		return newError(line_number, "invalid line in http block");
+	if (_open_blocks.size() != 1)
+	{
+		_open_blocks.push_back(BAD);
+		return newError(line_number, "invalid http block nesting");
+	}
 
 	if (split[0] == "access_log" && _access_log.empty())
 		_access_log = split[1];
@@ -69,6 +74,11 @@ void	Config::parseServer(std::vector<std::string>& split, unsigned int line_numb
 {
 	if (split.size() != 2)
 		return newError(line_number, "invalid line in server block");
+	if (_open_blocks.size() != 2 || _open_blocks.at(0) != HTTP || _open_blocks.at(1) != SERVER)
+	{
+		_open_blocks.push_back(BAD);
+		return newError(line_number, "invalid server block nesting");
+	}
 
 	if (split[0] == "port" && _server_port == 0)
 	{
@@ -160,6 +170,11 @@ void	Config::parseErrors(std::vector<std::string>& split, unsigned int line_numb
 {
 	if (split.size() != 2)
 		return newError(line_number, "invalid line in errors block");
+	if (_open_blocks.size() != 3 || _open_blocks.at(0) != HTTP || _open_blocks.at(1) != SERVER || _open_blocks.at(2) != ERRORS)
+	{
+		_open_blocks.push_back(BAD);
+		return newError(line_number, "invalid location of errors block");
+	}
 
 	ErrorPage	error;
 	error.code = split[0];
@@ -169,11 +184,17 @@ void	Config::parseErrors(std::vector<std::string>& split, unsigned int line_numb
 		return newError(line_number, "error code " + error.code + " already defined");
 	_error_pages.push_back(error);
 }
+
 void	Config::parseMethods(std::vector<std::string>& split, unsigned int line_number)
 {
 	if (split.size() != 1)
 		return newError(line_number, "invalid line in methods block");
-	
+	if (_open_blocks.size() != 3 || _open_blocks.at(0) != HTTP || _open_blocks.at(1) != SERVER || _open_blocks.at(2) != METHODS)
+	{
+		_open_blocks.push_back(BAD);
+		return newError(line_number, "invalid location of methods block");
+	}
+
 	if (split[0] != "GET" && split[0] != "POST" && split[0] != "DELETE")
 		return newError(line_number, "method " + split[0] + " is unsupported");
 
@@ -186,11 +207,18 @@ void	Config::parseRoutes(std::vector<std::string>& split, unsigned int line_numb
 {
 	if (split.size() != 3)
 		return newError(line_number, "invalid line in routes block");
+	if (_open_blocks.size() != 3 || _open_blocks.at(0) != HTTP || _open_blocks.at(1) != SERVER || _open_blocks.at(2) != ROUTES)
+	{
+		_open_blocks.push_back(BAD);
+		return newError(line_number, "invalid location of routes block");
+	}
 
 	Route	route;
 	route.method = split[0];
 	route.path = split[1];
 	route.location = split[2];
+	if (split[0] != "GET" && split[0] != "POST" && split[0] != "DELETE")
+		return newError(line_number, "method " + split[0] + " is unsupported");
 	if (checkRouteExists(route))
 		return newError(line_number, "route \"" + route.path + "\" with method " + route.method + " already defined");
 	_routes.push_back(route);
@@ -199,21 +227,76 @@ void	Config::parseRoutes(std::vector<std::string>& split, unsigned int line_numb
 void	Config::parseLine(std::string& line, unsigned int line_number)
 {
 	std::vector<std::string>	split = Utils::split_spaces(line);
+	static bool	http_block = false;
+	static bool	server_block = false;
+	static bool	errors_block = false;
+	static bool	methods_block = false;
+	static bool	routes_block = false;
 
 	if (split.size() >= 1 && split[0][0] == '#')
 		return ;
 	if (split.size() == 2 && split[1] == "{")
 	{
-		if (split[0] == "http")
+		if (split[0] == "http" && !http_block)
+		{
+			http_block = true;
 			_open_blocks.push_back(HTTP);
-		else if (split[0] == "server")
+			_http_location = line_number;
+		}
+		else if (split[0] == "http" && http_block)
+		{
+			_open_blocks.push_back(HTTP);
+			_open_blocks.push_back(BAD);
+			return newError(line_number, "http block already defined");
+		}
+		else if (split[0] == "server" && !server_block)
+		{
+			server_block = true;
 			_open_blocks.push_back(SERVER);
-		else if (split[0] == "errors")
+			_server_location = line_number;
+		}
+		else if (split[0] == "server" && server_block)
+		{
+			_open_blocks.push_back(SERVER);
+			_open_blocks.push_back(BAD);
+			return newError(line_number, "server block already defined");
+		}
+		else if (split[0] == "errors" && !errors_block)
+		{
+			errors_block = true;
 			_open_blocks.push_back(ERRORS);
-		else if (split[0] == "methods")
+			_errors_location = line_number;
+		}
+		else if (split[0] == "errors" && errors_block)
+		{
+			_open_blocks.push_back(ERRORS);
+			_open_blocks.push_back(BAD);
+			return newError(line_number, "errors block already defined");
+		}
+		else if (split[0] == "methods" && !methods_block)
+		{
+			methods_block = true;
 			_open_blocks.push_back(METHODS);
-		else if (split[0] == "routes")
+			_methods_location = line_number;
+		}
+		else if (split[0] == "methods" && methods_block)
+		{
+			_open_blocks.push_back(METHODS);
+			_open_blocks.push_back(BAD);
+			return newError(line_number, "methods block already defined");
+		}
+		else if (split[0] == "routes" && !routes_block)
+		{
+			routes_block = true;
 			_open_blocks.push_back(ROUTES);
+			_routes_location = line_number;
+		}
+		else if (split[0] == "routes" && routes_block)
+		{
+			_open_blocks.push_back(ROUTES);
+			_open_blocks.push_back(BAD);
+			return newError(line_number, "routes block already defined");
+		}
 		else
 			return newError(line_number, "invalid block \"" + split[0] + "\"");
 	}
@@ -221,6 +304,8 @@ void	Config::parseLine(std::string& line, unsigned int line_number)
 	{
 		if (_open_blocks.empty())
 			return newError(line_number, "closing brackets without opening block");
+		if (_open_blocks.back() == BAD)
+			_open_blocks.pop_back();
 		_open_blocks.pop_back();
 	}
 	else
@@ -237,7 +322,7 @@ void	Config::parseLine(std::string& line, unsigned int line_number)
 			parseMethods(split, line_number);
 		else if (_open_blocks.back() == ROUTES)
 			parseRoutes(split, line_number);
-		else
+		else if (_open_blocks.back() != BAD)
 			return newError(line_number, "invalid field \"" + split[0] + "\"");
 	}
 }
@@ -282,6 +367,23 @@ void	Config::checkConfig()
 		errors.push_back("limit_body_size");
 	if (_methods.empty())
 		errors.push_back("methods");
+
+	if (_open_blocks.size() != 0)
+	{
+		for (size_t i = 0; i < _open_blocks.size(); i++)
+		{
+			if (_open_blocks[i] == HTTP)
+				newError(_http_location, "http block not closed");
+			else if (_open_blocks[i] == SERVER)
+				newError(_server_location, "server block not closed");
+			else if (_open_blocks[i] == ERRORS)
+				newError(_errors_location, "errors block not closed");
+			else if (_open_blocks[i] == METHODS)
+				newError(_methods_location, "methods block not closed");
+			else if (_open_blocks[i] == ROUTES)
+				newError(_routes_location, "routes block not closed");
+		}
+	}
 
 	if (!_parse_errors.empty())
 	{
