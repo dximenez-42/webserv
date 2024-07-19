@@ -50,162 +50,196 @@ Config::~Config()
 
 void	Config::parseHttp(std::vector<std::string>& split, unsigned int line_number)
 {
-	if (split[0] == "access_log")
+	if (split.size() != 2)
+		return newError(line_number, "invalid line in http block");
+
+	if (split[0] == "access_log" && _access_log.empty())
 		_access_log = split[1];
-	else if (split[0] == "error_log")
+	else if (split[0] == "access_log" && !_access_log.empty())
+		return newError(line_number, "access_log already defined");
+	else if (split[0] == "error_log" && _error_log.empty())
 		_error_log = split[1];
+	else if (split[0] == "error_log" && !_error_log.empty())
+		return newError(line_number, "error_log already defined");
 	else
 		return newError(line_number, "invalid field \"" + split[0] + "\" in http block");
 }
 
 void	Config::parseServer(std::vector<std::string>& split, unsigned int line_number)
 {
-	if (split[0] == "port")
+	if (split.size() != 2)
+		return newError(line_number, "invalid line in server block");
+
+	if (split[0] == "port" && _server_port == 0)
 	{
 		_server_port = std::stoi(split[1]);
+		if (_server_port <= 0)
+			return newError(line_number, "port must be greater than 0");
 	}
-	else if (split[0] == "host")
+	else if (split[0] == "port" && _server_port != 0)
+		return newError(line_number, "port already defined");
+	else if (split[0] == "host" && _server_host.empty())
 	{
 		_server_host = split[1];
 	}
-	else if (split[0] == "name")
+	else if (split[0] == "host" && !_server_host.empty())
+		return newError(line_number, "host already defined");
+	else if (split[0] == "name" && _server_name == "default_name")
 	{
 		_server_name = split[1];
 	}
-	else if (split[0] == "index")
+	else if (split[0] == "name" && _server_name != "default_name")
+		return newError(line_number, "name already defined");
+	else if (split[0] == "index" && _server_index.empty())
 	{
 		_server_index = split[1];
 	}
-	else if (split[0] == "dir_listing")
+	else if (split[0] == "index" && !_server_index.empty())
+		return newError(line_number, "index already defined");
+	else if (split[0] == "dir_listing" && _server_dir_listing == -1)
 	{
 		if (split[1] == "true")
 			_server_dir_listing = 1;
 		else if (split[1] == "false")
 			_server_dir_listing = 0;
 	}
-	else if (split[0] == "root")
+	else if (split[0] == "dir_listing" && _server_dir_listing != -1)
+		return newError(line_number, "dir_listing already defined");
+	else if (split[0] == "root" && _server_root.empty())
 	{
 		_server_root = split[1];
 	}
-	else if (split[0] == "public")
+	else if (split[0] == "root" && !_server_root.empty())
+		return newError(line_number, "root already defined");
+	else if (split[0] == "public" && _server_public.empty())
 	{
 		_server_public = split[1];
 	}
-	else if (split[0] == "limit_body_size")
+	else if (split[0] == "public" && !_server_public.empty())
+		return newError(line_number, "public already defined");
+	else if (split[0] == "limit_body_size" && _limit_body_size == 0)
 	{
 		_limit_body_size = std::stoi(split[1]);
 		if (_limit_body_size <= 0)
 			return newError(line_number, "limit_body_size must be greater than 0");
 	}
+	else if (split[0] == "limit_body_size" && _limit_body_size != 0)
+		return newError(line_number, "limit_body_size already defined");
 	else
 		return newError(line_number, "invalid field \"" + split[0] + "\" in server block");
 }
 
+bool	Config::checkErrorExists(ErrorPage& error)
+{
+	for (size_t i = 0; i < _error_pages.size(); i++)
+	{
+		if (_error_pages[i].code == error.code)
+			return true;
+	}
+	return false;
+}
+
+bool	Config::checkMethodExists(std::string& method)
+{
+	if (std::find(_methods.begin(), _methods.end(), method) != _methods.end())
+		return true;
+	return false;
+}
+
+bool	Config::checkRouteExists(Route& route)
+{
+	for (size_t i = 0; i < _routes.size(); i++)
+	{
+		if (_routes[i].method == route.method && _routes[i].path == route.path)
+			return true;
+	}
+	return false;
+}
+
 void	Config::parseErrors(std::vector<std::string>& split, unsigned int line_number)
 {
+	if (split.size() != 2)
+		return newError(line_number, "invalid line in errors block");
+
 	ErrorPage	error;
 	error.code = split[0];
 	error.path = split[1];
+
+	if (checkErrorExists(error))
+		return newError(line_number, "error code " + error.code + " already defined");
 	_error_pages.push_back(error);
 }
 void	Config::parseMethods(std::vector<std::string>& split, unsigned int line_number)
 {
+	if (split.size() != 1)
+		return newError(line_number, "invalid line in methods block");
+	
+	if (split[0] != "GET" && split[0] != "POST" && split[0] != "DELETE")
+		return newError(line_number, "method " + split[0] + " is unsupported");
+
+	if (checkMethodExists(split[0]))
+		return newError(line_number, "method " + split[0] + " already defined");
 	_methods.push_back(split[0]);
 }
 
 void	Config::parseRoutes(std::vector<std::string>& split, unsigned int line_number)
 {
-	Route	route;
+	if (split.size() != 3)
+		return newError(line_number, "invalid line in routes block");
 
+	Route	route;
 	route.method = split[0];
 	route.path = split[1];
 	route.location = split[2];
+	if (checkRouteExists(route))
+		return newError(line_number, "route \"" + route.path + "\" with method " + route.method + " already defined");
 	_routes.push_back(route);
 }
 
 void	Config::parseLine(std::string& line, unsigned int line_number)
 {
 	std::vector<std::string>	split = Utils::split_spaces(line);
-	static bool		http = false;
-	static bool		server = false;
-	static bool		errors = false;
-	static bool		methods = false;
-	static bool		routes = false;
 
 	if (split.size() >= 1 && split[0][0] == '#')
 		return ;
-
-	// std::cout << "line: \"" << line << "\"" << std::endl;
-	// std::cout << "\tsplit.size() = " << split.size() << std::endl;
-	// std::cout << "\tsplit[0] = " << split[0] << std::endl;
-	// if (split.size() == 2)
-	// 	std::cout << "\tsplit[1] = " << split[1] << std::endl << std::endl;
-	// else
-	// 	std::cout << std::endl;
-
 	if (split.size() == 2 && split[1] == "{")
 	{
 		if (split[0] == "http")
-			http = true;
-		else if (split[0] == "http" && http)
-			return newError(line_number, "http block already defined");
-		else if (split[0] == "server" && http)
-			server = true;
-		else if (split[0] == "server" && !http)
-			return newError(line_number, "server block must be defined in http block");
-		else if (split[0] == "server" && server)
-			return newError(line_number, "server block already defined");
-		else if ((split[0] == "errors" || split[0] == "methods" || split[0] == "routes") && http && server)
-		{
-			if (split[0] == "errors")
-				errors = true;
-			else if (split[0] == "methods")
-				methods = true;
-			else if (split[0] == "routes")
-				routes = true;
-		}
-		else if ((split[0] == "errors" || split[0] == "methods" || split[0] == "routes") && !server)
-			return newError(line_number, "\"" + split[0] + "\" block must be defined in server block");
+			_open_blocks.push_back(HTTP);
+		else if (split[0] == "server")
+			_open_blocks.push_back(SERVER);
+		else if (split[0] == "errors")
+			_open_blocks.push_back(ERRORS);
+		else if (split[0] == "methods")
+			_open_blocks.push_back(METHODS);
+		else if (split[0] == "routes")
+			_open_blocks.push_back(ROUTES);
 		else
 			return newError(line_number, "invalid block \"" + split[0] + "\"");
 	}
 	else if (split.size() == 1 && split[0] == "}")
 	{
-		if (routes || methods || errors)
-		{
-			routes = false;
-			methods = false;
-			errors = false;
-		}
-		else if (!routes && !methods && !errors && server)
-			server = false;
-		else if (!routes && !methods && !errors && http)
-			http = false;
-		else
-			return newError(line_number, "invalid block closing");
+		if (_open_blocks.empty())
+			return newError(line_number, "closing brackets without opening block");
+		_open_blocks.pop_back();
 	}
-	else if (split.size() >= 1 || split.size() <= 3)
+	else
 	{
-		if (http && !server && split.size() == 2)
+		if (_open_blocks.empty())
+			return newError(line_number, "invalid field \"" + split[0] + "\"");
+		if (_open_blocks.back() == HTTP)
 			parseHttp(split, line_number);
-		else if (http && server)
-		{
-			if (errors && split.size() == 2)
-				parseErrors(split, line_number);
-			else if (methods && split.size() == 1)
-				parseMethods(split, line_number);
-			else if (routes && split.size() == 3)
-				parseRoutes(split, line_number);
-			else if (split.size() == 2)
-				parseServer(split, line_number);
-			else
-				return newError(line_number, "invalid field \"" + split[0] + "\"");
-		}
+		else if (_open_blocks.back() == SERVER)
+			parseServer(split, line_number);
+		else if (_open_blocks.back() == ERRORS)
+			parseErrors(split, line_number);
+		else if (_open_blocks.back() == METHODS)
+			parseMethods(split, line_number);
+		else if (_open_blocks.back() == ROUTES)
+			parseRoutes(split, line_number);
 		else
 			return newError(line_number, "invalid field \"" + split[0] + "\"");
 	}
-	else
-		return newError(line_number, "invalid line format");
 }
 
 void	Config::parseConfig()
@@ -221,6 +255,7 @@ void	Config::parseConfig()
 		parseLine(line, line_number);
 	}
 	checkConfig();
+	//TODO clear _parse_errors & _open_blocks
 }
 
 void	Config::checkConfig()

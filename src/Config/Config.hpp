@@ -36,6 +36,7 @@ class Config
 		std::string		_filename;
 		std::ifstream	_input;
 		std::vector<std::string>	_parse_errors;
+		std::vector<OpenCfg>		_open_blocks;
 
 		std::string		_access_log;
 		std::string		_error_log;
@@ -60,6 +61,10 @@ class Config
 		void	parseErrors(std::vector<std::string>& split, unsigned int line_number);
 		void	parseMethods(std::vector<std::string>& split, unsigned int line_number);
 		void	parseRoutes(std::vector<std::string>& split, unsigned int line_number);
+
+		bool	checkErrorExists(ErrorPage& error);
+		bool	checkMethodExists(std::string& method);
+		bool	checkRouteExists(Route& route);
 
 		void	newError(unsigned int line_number, std::string error);
 
