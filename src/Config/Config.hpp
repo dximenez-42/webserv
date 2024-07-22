@@ -33,11 +33,8 @@ enum OpenCfg
 
 class Config
 {
-	private:
+	protected:
 		std::string		_filename;
-		std::ifstream	_input;
-		std::vector<std::string>	_parse_errors;
-		std::vector<OpenCfg>		_open_blocks;
 
 		std::string		_access_log;
 		std::string		_error_log;
@@ -54,6 +51,12 @@ class Config
 		std::vector<ErrorPage>		_error_pages;
 		std::vector<std::string>	_methods;
 		std::vector<Route>			_routes;
+
+	private:
+		std::ifstream	_input;
+
+		std::vector<std::string>	_parse_errors;
+		std::vector<OpenCfg>		_open_blocks;
 
 		int		_http_location;
 		int		_server_location;
@@ -81,7 +84,7 @@ class Config
 		Config(std::string& filename);
 		Config(Config const &src);
 		Config& operator=(Config const &rhs);
-		~Config();
+		virtual ~Config() = 0;
 
 		void	parseConfig();
 		void	printConfig();

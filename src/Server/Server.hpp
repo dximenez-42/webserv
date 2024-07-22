@@ -2,12 +2,12 @@
 #define SERVER_HPP
 
 #include "../../includes.hpp"
+#include "../Config/Config.hpp"
 
-class Server
+class Server : public Config
 {
-	private:
 	public:
-		Server();
+		Server(std::string filename);
 		Server(const Server &other);
 		Server &operator=(const Server &other);
 		~Server();

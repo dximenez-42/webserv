@@ -1,5 +1,6 @@
 #include <iostream>
 #include "includes.hpp"
+#include "src/Server/Server.hpp"
 
 int	main(int ac, char **av, char **envp)
 {
@@ -16,9 +17,9 @@ int	main(int ac, char **av, char **envp)
 	try
 	{
 		std::string	filename = av[1];
-		Config		config(filename);
-		config.parseConfig();
-		config.printConfig();
+		Server		server(filename);
+		server.parseConfig();
+		server.printConfig();
 	}
 	catch(const std::exception& e)
 	{

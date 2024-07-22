@@ -39,13 +39,8 @@ Config::~Config()
 		_input.close();
 	if (!_parse_errors.empty())
 		_parse_errors.clear();
-	
-	if (!_error_pages.empty())
-		_error_pages.clear();
-	if (!_methods.empty())
-		_methods.clear();
-	if (!_routes.empty())
-		_routes.clear();
+	if (!_open_blocks.empty())
+		_open_blocks.clear();
 }
 
 void	Config::parseHttp(std::vector<std::string>& split, unsigned int line_number)
@@ -340,7 +335,12 @@ void	Config::parseConfig()
 		parseLine(line, line_number);
 	}
 	checkConfig();
-	//TODO clear _parse_errors & _open_blocks
+	if (_input.is_open())
+		_input.close();
+	if (!_parse_errors.empty())
+		_parse_errors.clear();
+	if (!_open_blocks.empty())
+		_open_blocks.clear();
 }
 
 void	Config::checkConfig()
