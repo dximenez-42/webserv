@@ -3,8 +3,8 @@ CXX			= c++
 CXXFLAGS	= -g3 -std=c++98 #-Wall -Wextra -Werror
 
 SRCS		=	main.cpp\
-				src/Config/Config.cpp\
-				src/Utils/Utils.cpp
+				src/Config/Config.cpp
+
 OBJS		= $(SRCS:.cpp=.o)
 
 all: $(NAME)

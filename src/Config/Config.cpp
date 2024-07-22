@@ -3,7 +3,7 @@
 Config::Config(std::string& filename)
 {
 	_filename = filename;
-	_input.open(filename, std::ifstream::in);
+	_input.open(filename.c_str(), std::ifstream::in);
 	if (!_input.good() || !_input.is_open())
 		throw FileOpenException();
 	
@@ -82,7 +82,7 @@ void	Config::parseServer(std::vector<std::string>& split, unsigned int line_numb
 
 	if (split[0] == "port" && _server_port == 0)
 	{
-		_server_port = std::stoi(split[1]);
+		_server_port = std::atoi(split[1].c_str());
 		if (_server_port <= 0)
 			return newError(line_number, "port must be greater than 0");
 	}
@@ -129,7 +129,7 @@ void	Config::parseServer(std::vector<std::string>& split, unsigned int line_numb
 		return newError(line_number, "public already defined");
 	else if (split[0] == "limit_body_size" && _limit_body_size == 0)
 	{
-		_limit_body_size = std::stoi(split[1]);
+		_limit_body_size = std::atoi(split[1].c_str());
 		if (_limit_body_size <= 0)
 			return newError(line_number, "limit_body_size must be greater than 0");
 	}
@@ -151,7 +151,7 @@ bool	Config::checkErrorExists(ErrorPage& error)
 
 bool	Config::checkMethodExists(std::string& method)
 {
-	if (std::find(_methods.begin(), _methods.end(), method) != _methods.end())
+	if (::isInVector(_methods, method))
 		return true;
 	return false;
 }
@@ -226,7 +226,7 @@ void	Config::parseRoutes(std::vector<std::string>& split, unsigned int line_numb
 
 void	Config::parseLine(std::string& line, unsigned int line_number)
 {
-	std::vector<std::string>	split = Utils::split_spaces(line);
+	std::vector<std::string>	split = ::splitSpaces(line);
 	static bool	http_block = false;
 	static bool	server_block = false;
 	static bool	errors_block = false;
@@ -335,7 +335,7 @@ void	Config::parseConfig()
 	while (std::getline(_input, line))
 	{
 		++line_number;
-		if (line.empty() || Utils::onlySpaces(line))
+		if (line.empty() || ::onlySpaces(line))
 			continue;
 		parseLine(line, line_number);
 	}
@@ -445,7 +445,7 @@ void	Config::printConfig()
 
 void	Config::newError(unsigned int line_number, std::string error)
 {
-	_parse_errors.push_back("\033[1;37m" + _filename + ":" + std::to_string(line_number) + "\033[0m: \033[1;31merror:\033[0m " + error);
+	_parse_errors.push_back("\033[1;37m" + _filename + ":" + ::itos(line_number) + "\033[0m: \033[1;31merror:\033[0m " + error);
 }
 
 const char *Config::FileOpenException::what() const throw()
