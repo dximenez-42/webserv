@@ -4,7 +4,8 @@ CXXFLAGS	= -g3 -std=c++98 #-Wall -Wextra -Werror
 
 SRCS		=	main.cpp\
 				src/Config/Config.cpp\
-				src/Server/Server.cpp
+				src/Server/Server.cpp\
+				src/Server/ServerList.cpp\
 
 OBJS		= $(SRCS:.cpp=.o)
 

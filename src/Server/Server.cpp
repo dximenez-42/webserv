@@ -80,6 +80,107 @@ int Server::accept() {
 }
 
 
-long Server::getFd() {
+int			Server::send(long socket)
+{
+	static std::map<long, size_t>	sent;
+
+	if (sent.find(socket) == sent.end())
+		sent[socket] = 0;
+
+	if (OUT && sent[socket] == 0)
+	{
+		if (_requests[socket].size() < 1000)
+			std::cout << "\rResponse :                " << std::endl << "[" << GREEN << _requests[socket] << RESET << "]\n" << std::endl;
+		else
+			std::cout << "\rResponse :                " << std::endl << "[" << GREEN << _requests[socket].substr(0, 1000) << "..." << _requests[socket].substr(_requests[socket].size() - 10, 15) << RESET << "]\n" << std::endl;
+	}
+
+	std::string	str = _requests[socket].substr(sent[socket], RECV_SIZE);
+	int	ret = ::send(socket, str.c_str(), str.size(), 0);
+
+	if (ret == -1)
+	{
+		this->close(socket);
+		sent[socket] = 0;
+		return (-1);
+	}
+	else
+	{
+		sent[socket] += ret;
+		if (sent[socket] >= _requests[socket].size())
+		{
+			_requests.erase(socket);
+			sent[socket] = 0;
+			return (0);
+		}
+		else
+			return (1);
+	}
+}
+
+//Recibe y lee la request
+int			Server::recv(long socket)
+{
+	char	buffer[RECV_SIZE] = {0};
+	int		ret;
+
+	ret = ::recv(socket, buffer, RECV_SIZE - 1, 0);
+
+	if (ret == 0 || ret == -1)
+	{
+		close(socket);
+		if (!ret)
+			std::cout << "\rConnection was closed by client.\n" << std::endl;
+		else
+			std::cout << "\rRead error, closing connection.\n" << std::endl;
+		return (-1);
+	}
+
+	_requests[socket] += std::string(buffer);
+
+	size_t	i = _requests[socket].find("\r\n\r\n");
+	if (i != std::string::npos)
+	{
+		if (_requests[socket].find("Content-Length: ") == std::string::npos)
+		{
+			if (_requests[socket].find("Transfer-Encoding: chunked") != std::string::npos)
+			{
+				if (checkEnd(_requests[socket], "0\r\n\r\n") == 0)
+					return (0);
+				else
+					return (1);
+			}
+			else
+				return (0);
+		}
+
+		size_t	len = std::atoi(_requests[socket].substr(_requests[socket].find("Content-Length: ") + 16, 10).c_str());
+		if (_requests[socket].size() >= len + i + 4)
+			return (0);
+		else
+			return (1);
+	}
+
+	return (1);
+}
+
+
+long 	Server::getFd() {
 	return _fd;
+}
+
+
+void	Server::close(int socket)
+{
+	if (socket > 0)
+		::close(socket);
+	_requests.erase(socket);
+}
+
+
+void	Server::clean(void)
+{
+	if (_fd > 0)
+		::close(_fd);
+	_fd = -1;
 }

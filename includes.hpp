@@ -15,6 +15,8 @@
 #include "src/Utils/String.hpp"
 #include "src/Utils/Vector.hpp"
 #include "src/Server/Server.hpp"
-#include "src/Server/Cluster.hpp"
+#include "src/Server/ServerList.hpp"
 
+#include "./libft/include/libft.h"
+#include "./colors.hpp"
 #endif

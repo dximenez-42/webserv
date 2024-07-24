@@ -26,13 +26,13 @@ int	main(int ac, char **av, char **envp)
 		std::cerr << "Exception thrown: " << e.what() << std::endl;
 	}
 
-	Cluster cluster;
+	ServerList ServerList;
 
-	cluster.config(av[1]);
-	if (cluster.setup() == -1)
+	ServerList.config(av[1]);
+	if (ServerList.setup() == -1)
 		return(1);
-	cluster.run();
-	
+	ServerList.run();
+
 
 	return EXIT_SUCCESS;
 }

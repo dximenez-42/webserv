@@ -4,7 +4,7 @@
 
 #include "Server.hpp"
 
-class Cluster : public Config
+class ServerList : public Config
 {
     private:
         fd_set                      _fd_set;
@@ -14,8 +14,8 @@ class Cluster : public Config
         std::map<long, Server *>	_sockets;
 
     public:
-        Cluster();
-        ~Cluster();
+        ServerList();
+        ~ServerList();
 
         void config(std::string);
         int setup();
