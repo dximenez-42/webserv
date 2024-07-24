@@ -25,5 +25,14 @@ int	main(int ac, char **av, char **envp)
 	{
 		std::cerr << "Exception thrown: " << e.what() << std::endl;
 	}
+
+	Cluster cluster;
+
+	cluster.config(av[1]);
+	if (cluster.setup() == -1)
+		return(1);
+	cluster.run();
+	
+
 	return EXIT_SUCCESS;
 }

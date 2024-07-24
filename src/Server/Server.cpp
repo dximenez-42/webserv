@@ -78,3 +78,8 @@ int Server::accept() {
 	}
 	return 0;
 }
+
+
+long Server::getFd() {
+	return _fd;
+}
