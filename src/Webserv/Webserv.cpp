@@ -85,6 +85,14 @@ void	Webserv::parseServer(std::vector<std::string>& split, unsigned int line_num
 		server->setServerPort(std::atoi(split[1].c_str()));
 		if (server->getServerPort() <= 0)
 			return newError(line_number, "port must be greater than 0");
+		if (_servers.size() > 1)
+		{
+			for (size_t i = 0; i < _servers.size() - 1; i++)
+			{
+				if (_servers[i]->getServerPort() == server->getServerPort())
+					return newError(line_number, "port is duplicated on another server");
+			}
+		}
 	}
 	else if (split[0] == "port" && server->getServerPort() != 0)
 		return newError(line_number, "port already defined");
