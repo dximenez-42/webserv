@@ -4,6 +4,7 @@
 
 int	main(int ac, char **av, char **envp)
 {
+	(void)envp;
 	if (ac != 2)
 	{
 		std::cout << "Error: usage ./webserv <configuration file>" << std::endl;

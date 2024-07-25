@@ -302,6 +302,10 @@ void	Webserv::parseLine(std::string line, unsigned int line_number)
 		case ROUTES:
 			routes_block = false;
 			break;
+		case NONE:
+		case BAD:
+		case HTTP:
+			break;
 		}
 		_open_blocks.pop_back();
 	}
