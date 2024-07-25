@@ -1,6 +1,6 @@
 #include <iostream>
 #include "includes.hpp"
-#include "src/Server/Server.hpp"
+#include "src/Webserv/Webserv.hpp"
 
 int	main(int ac, char **av, char **envp)
 {
@@ -17,9 +17,8 @@ int	main(int ac, char **av, char **envp)
 	try
 	{
 		std::string	filename = av[1];
-		Server		server(filename);
-		server.parseConfig();
-		server.printConfig();
+		Webserv		webserv = Webserv(filename);
+		webserv.printServers();
 	}
 	catch(const std::exception& e)
 	{
