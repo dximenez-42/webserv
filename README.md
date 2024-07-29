@@ -7,3 +7,5 @@
 - No cerrar llaves de algun bloque (probar varios)
 - Ordenar los bloques de forma erronea
 - Probar valores numericos negativos (puerto y maximo del body) 
+
+https://excalidraw.com/#json=68IFPQFgBV3IP-DZ_287n,7vnlNFWizDeSVOZwDLLKAA

@@ -1,10 +1,18 @@
 #include "Server.hpp"
 
-Server::Server(std::string filename) : Config(filename)
+Server::Server()
 {
+	_server_port = 0;
+	_server_host = "";
+	_server_name = "default_name";
+	_server_index = "";
+	_server_dir_listing = -1;
+	_server_root = "";
+	_server_public = "";
+	_limit_body_size = 0;
 }
 
-Server::Server(const Server &src) : Config(src)
+Server::Server(const Server &src)
 {
 	*this = src;
 }
@@ -29,158 +37,178 @@ Server::~Server()
 	std::cout << "Server destruct" << std::endl;
 }
 
-int Server::setup() {
-	int _fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (_fd == 0) {
-        std::cerr << "Socket creation error\n";
+int				Server::getServerPort() const
+{
+	return (_server_port);
+}
+
+std::string		Server::getServerHost() const
+{
+	return (_server_host);
+}
+
+std::string		Server::getServerName() const
+{
+	return (_server_name);
+}
+
+std::string		Server::getServerIndex() const
+{
+	return (_server_index);
+}
+
+int			Server::getServerDirListing() const
+{
+	return (_server_dir_listing);
+}
+
+std::string		Server::getServerRoot() const
+{
+	return (_server_root);
+}
+
+std::string		Server::getServerPublic() const
+{
+	return (_server_public);
+}
+
+int				Server::getLimitBodySize() const
+{
+	return (_limit_body_size);
+}
+
+std::vector<ErrorPage>		Server::getErrorPages() const
+{
+	return (_error_pages);
+}
+
+std::vector<std::string>	Server::getMethods() const
+{
+	return (_methods);
+}
+
+std::vector<Route>			Server::getRoutes() const
+{
+	return (_routes);
+}
+
+void	Server::setServerPort(int port)
+{
+	_server_port = port;
+}
+
+void	Server::setServerHost(std::string host)
+{
+	_server_host = host;
+}
+
+void	Server::setServerName(std::string name)
+{
+	_server_name = name;
+}
+
+void	Server::setServerIndex(std::string index)
+{
+	_server_index = index;
+}
+
+void	Server::setServerDirListing(int dir_listing)
+{
+	_server_dir_listing = dir_listing;
+}
+
+void	Server::setServerRoot(std::string root)
+{
+	_server_root = root;
+}
+
+void	Server::setServerPublic(std::string public_dir)
+{
+	_server_public = public_dir;
+}
+
+void	Server::setLimitBodySize(int limit_body_size)
+{
+	_limit_body_size = limit_body_size;
+}
+
+void	Server::addErrorPage(ErrorPage error)
+{
+	_error_pages.push_back(error);
+}
+
+void	Server::addMethod(std::string method)
+{
+	_methods.push_back(method);
+}
+
+void	Server::addRoute(Route route)
+{
+	_routes.push_back(route);
+}
+
+
+int Server::setUp() {
+    struct sockaddr_in address;
+
+    _server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (_server_fd == 0) {
+        std::cerr << "Socket failed" << std::endl;
         return -1;
     }
 
-	setAddress();
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(_server_port);
 
-	if (bind(_fd, (struct sockaddr *)&_address, sizeof(_address)) < 0) {
-        std::cerr << "Bind failed\n";
-        close(_fd);
+    if (bind(_server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
+        std::cerr << "Bind failed" << std::endl;
+        close(_server_fd);
         return -1;
     }
 
-	if (listen(_fd, 3) < 0) {
-        std::cerr << "Listen failed\n";
-        close(_fd);
-        return -1;
-    }
-
-    std::cout << "Server listening on port " << _port << std::endl;
 	return 0;
 }
 
-void Server::setAddress() {
-	_address.sin_family = AF_INET;
-    _address.sin_addr.s_addr = INADDR_ANY;
-    _address.sin_port = htons(_port);
+
+int Server::listen() {
+    if (::listen(_server_fd, 3) < 0) {
+        std::cerr << "Listen failed" << std::endl;
+        close(_server_fd);
+        return -1;
+    }
+
+    std::cout << "Server listening on port " << _server_port << std::endl;
+	
+	return 0;
 }
+
 
 int Server::accept() {
-	int new_socket;
-	int addrlen = sizeof(_address);
+    int addrlen = sizeof(address);
 
-	while (new_socket = ::accept(_fd, NULL, NULL) >= 0) {
-		std::cout << "Connection accepted\n";
-		char buffer[1024] = {0};
-		read(new_socket, buffer, 1024);
-		std::cout << "Request: \n" << buffer << "\n";
-	}
+    _server_socket = ::accept(_server_fd, (struct sockaddr*)&address, (socklen_t*)&addrlen);
+    if (_server_socket < 0) {
+        std::cerr << "Accept failed" << std::endl;
+        close(_server_fd);
+        return -1;
+    }
 
-	if (new_socket < 0) {
-		std::cerr << "Accept failed\n";
-		close(_fd);
-		return -1;
-	}
 	return 0;
 }
 
+int Server::read() {
+	char buffer[BUFFER_SIZE] = {0};
 
-int			Server::send(long socket)
-{
-	static std::map<long, size_t>	sent;
-
-	if (sent.find(socket) == sent.end())
-		sent[socket] = 0;
-
-	if (OUT && sent[socket] == 0)
-	{
-		if (_requests[socket].size() < 1000)
-			std::cout << "\rResponse :                " << std::endl << "[" << GREEN << _requests[socket] << RESET << "]\n" << std::endl;
-		else
-			std::cout << "\rResponse :                " << std::endl << "[" << GREEN << _requests[socket].substr(0, 1000) << "..." << _requests[socket].substr(_requests[socket].size() - 10, 15) << RESET << "]\n" << std::endl;
-	}
-
-	std::string	str = _requests[socket].substr(sent[socket], RECV_SIZE);
-	int	ret = ::send(socket, str.c_str(), str.size(), 0);
-
-	if (ret == -1)
-	{
-		this->close(socket);
-		sent[socket] = 0;
-		return (-1);
-	}
-	else
-	{
-		sent[socket] += ret;
-		if (sent[socket] >= _requests[socket].size())
-		{
-			_requests.erase(socket);
-			sent[socket] = 0;
-			return (0);
-		}
-		else
-			return (1);
-	}
+	int valread = ::read(_server_socket, buffer, BUFFER_SIZE);
+    std::cout << "Received message: " << buffer << std::endl;
+	return 0;
 }
 
-//Recibe y lee la request
-int			Server::recv(long socket)
-{
-	char	buffer[RECV_SIZE] = {0};
-	int		ret;
+int Server::send() {
+    const char* hello = "Hello from server";
 
-	ret = ::recv(socket, buffer, RECV_SIZE - 1, 0);
-
-	if (ret == 0 || ret == -1)
-	{
-		close(socket);
-		if (!ret)
-			std::cout << "\rConnection was closed by client.\n" << std::endl;
-		else
-			std::cout << "\rRead error, closing connection.\n" << std::endl;
-		return (-1);
-	}
-
-	_requests[socket] += std::string(buffer);
-
-	size_t	i = _requests[socket].find("\r\n\r\n");
-	if (i != std::string::npos)
-	{
-		if (_requests[socket].find("Content-Length: ") == std::string::npos)
-		{
-			if (_requests[socket].find("Transfer-Encoding: chunked") != std::string::npos)
-			{
-				if (checkEnd(_requests[socket], "0\r\n\r\n") == 0)
-					return (0);
-				else
-					return (1);
-			}
-			else
-				return (0);
-		}
-
-		size_t	len = std::atoi(_requests[socket].substr(_requests[socket].find("Content-Length: ") + 16, 10).c_str());
-		if (_requests[socket].size() >= len + i + 4)
-			return (0);
-		else
-			return (1);
-	}
-
-	return (1);
-}
-
-
-long 	Server::getFd() {
-	return _fd;
-}
-
-
-void	Server::close(int socket)
-{
-	if (socket > 0)
-		::close(socket);
-	_requests.erase(socket);
-}
-
-
-void	Server::clean(void)
-{
-	if (_fd > 0)
-		::close(_fd);
-	_fd = -1;
+	::send(_server_socket, hello, strlen(hello), 0);
+    std::cout << "Hello message sent" << std::endl;
+	return 0;
 }
