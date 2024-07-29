@@ -33,6 +33,10 @@ class Server
 		std::vector<std::string>	_methods;
 		std::vector<Route>			_routes;
 
+		int					_server_fd;
+		int					_server_socket;
+	    struct sockaddr_in 	address;
+
 	public:
 		Server();
 		Server(const Server &other);
@@ -62,6 +66,12 @@ class Server
 		void	addErrorPage(ErrorPage error);
 		void	addMethod(std::string method);
 		void	addRoute(Route route);
+
+		int		setUp();
+		int		listen();
+		int		accept();
+		int		read();
+		int		send();
 };
 
 

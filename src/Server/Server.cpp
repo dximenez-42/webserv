@@ -146,3 +146,69 @@ void	Server::addRoute(Route route)
 	_routes.push_back(route);
 }
 
+
+int Server::setUp() {
+    struct sockaddr_in address;
+
+    _server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (_server_fd == 0) {
+        std::cerr << "Socket failed" << std::endl;
+        return -1;
+    }
+
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(_server_port);
+
+    if (bind(_server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
+        std::cerr << "Bind failed" << std::endl;
+        close(_server_fd);
+        return -1;
+    }
+
+	return 0;
+}
+
+
+int Server::listen() {
+    if (::listen(_server_fd, 3) < 0) {
+        std::cerr << "Listen failed" << std::endl;
+        close(_server_fd);
+        return -1;
+    }
+
+    std::cout << "Server listening on port " << _server_port << std::endl;
+	
+	return 0;
+}
+
+
+int Server::accept() {
+    int addrlen = sizeof(address);
+
+    _server_socket = ::accept(_server_fd, (struct sockaddr*)&address, (socklen_t*)&addrlen);
+    if (_server_socket < 0) {
+        std::cerr << "Accept failed" << std::endl;
+        close(_server_fd);
+        return -1;
+    }
+
+	return 0;
+}
+
+
+int Server::read() {
+	char buffer[BUFFER_SIZE] = {0};
+
+	int valread = ::read(_server_socket, buffer, BUFFER_SIZE);
+    std::cout << "Received message: " << buffer << std::endl;
+	return 0;
+}
+
+int Server::send() {
+    const char* hello = "Hello from server";
+
+	::send(_server_socket, hello, strlen(hello), 0);
+    std::cout << "Hello message sent" << std::endl;
+	return 0;
+}
