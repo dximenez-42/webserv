@@ -57,11 +57,19 @@ void	Webserv::parseHttp(std::vector<std::string>& split, unsigned int line_numbe
 	}
 
 	if (split[0] == "access_log" && _access_log.empty())
+	{
+		if (!::isValidRelativePath(split[1]) && split[1] != "/dev/stdout" && split[1] != "/dev/stderr" && split[1] != "/dev/null")
+			return newError(line_number, "invalid access path");
 		_access_log = split[1];
+	}
 	else if (split[0] == "access_log" && !_access_log.empty())
 		return newError(line_number, "access_log already defined");
 	else if (split[0] == "error_log" && _error_log.empty())
+	{
+		if (!::isValidRelativePath(split[1]) && split[1] != "/dev/stdout" && split[1] != "/dev/stderr" && split[1] != "/dev/null")
+			return newError(line_number, "invalid error path");
 		_error_log = split[1];
+	}
 	else if (split[0] == "error_log" && !_error_log.empty())
 		return newError(line_number, "error_log already defined");
 	else
@@ -125,13 +133,22 @@ void	Webserv::parseServer(std::vector<std::string>& split, unsigned int line_num
 		return newError(line_number, "dir_listing already defined");
 	else if (split[0] == "root" && server->getServerRoot().empty())
 	{
-		server->setServerRoot(split[1]);
+		if (!::isValidPath(split[1]))
+			return newError(line_number, "invalid root path");
+		server->setServerRoot(::normalizePath(split[1]));
 	}
 	else if (split[0] == "root" && !server->getServerRoot().empty())
 		return newError(line_number, "root already defined");
 	else if (split[0] == "public" && server->getServerPublic().empty())
 	{
-		server->setServerPublic(split[1]);
+		if (server->getServerRoot().empty())
+		{
+			_open_blocks.push_back(BAD);
+			return newError(line_number, "root must be defined before public");
+		}
+		if (!::isValidRelativePath(split[1]))		// TODO join path with root
+			return newError(line_number, "invalid public path");
+		server->setServerPublic(::normalizePath(split[1]));
 	}
 	else if (split[0] == "public" && !server->getServerPublic().empty())
 		return newError(line_number, "public already defined");
@@ -156,10 +173,17 @@ void	Webserv::parseErrors(std::vector<std::string>& split, unsigned int line_num
 		_open_blocks.push_back(BAD);
 		return newError(line_number, "invalid location of errors block");
 	}
+	if (_servers.back()->getServerRoot().empty())
+	{
+		_open_blocks.push_back(BAD);
+		return newError(line_number, "root must be defined before errors");
+	}
 
+	if (!::isValidRelativePath(split[1]))		// TODO join path with root
+		return newError(line_number, "invalid error path");
 	ErrorPage	error;
 	error.code = split[0];
-	error.path = split[1];
+	error.path = ::normalizePath(split[1]);
 
 	if (checkErrorExists(error))
 		return newError(line_number, "error code " + error.code + " already defined");
@@ -193,13 +217,22 @@ void	Webserv::parseRoutes(std::vector<std::string>& split, unsigned int line_num
 		_open_blocks.push_back(BAD);
 		return newError(line_number, "invalid location of routes block");
 	}
+	if (_servers.back()->getServerRoot().empty())
+	{
+		_open_blocks.push_back(BAD);
+		return newError(line_number, "root must be defined before routes");
+	}
 
-	Route	route;
-	route.method = split[0];
-	route.path = split[1];
-	route.location = split[2];
 	if (split[0] != "GET" && split[0] != "POST" && split[0] != "DELETE")
 		return newError(line_number, "method " + split[0] + " is unsupported");
+	if (!::isValidRoutePath(split[1]))
+		return newError(line_number, "invalid route path");
+	if (!::isValidRelativePath(split[2]))		// TODO join path with root
+		return newError(line_number, "invalid route location");
+	Route	route;
+	route.method = split[0];
+	route.path = ::normalizePath(split[1]);
+	route.location = ::normalizePath(split[2]);
 	if (checkRouteExists(route))
 		return newError(line_number, "route \"" + route.path + "\" with method " + route.method + " already defined");
 	_servers.back()->addRoute(route);

@@ -65,16 +65,6 @@ bool	onlySpaces(T& str)
 	return true;
 }
 
-template <typename T>
-bool	isValidRelativePath(T& str)
-{
-	if (str.empty())
-		return false;
-	if (str[0] == '/')
-		return false;
-	return isValidPath(str);
-}
-
 /**
  * @brief Check is valid and exists (does not check permissions!)
  * @param str The path to check
@@ -92,6 +82,47 @@ bool	isValidPath(T& str)
 	}
 	if (access(str.c_str(), F_OK) == -1)
 		return false;
+	return true;
+}
+
+template <typename T>
+bool	isValidRelativePath(T& str)
+{
+	if (str.empty())
+		return false;
+	if (str[0] == '/')
+		return false;
+	return isValidPath(str);
+}
+
+template <typename T>
+T&	normalizePath(T& src)
+{
+	for (size_t i = 0; i < src.size(); i++)
+	{
+		if (src[i] == '/' && i == 0)
+			src.erase(0, 1);
+		if (src[i] == '/' && i == src.size() - 1)
+			src.erase(src.size() - 1, src.size());
+	}
+	return src;
+}
+
+template <typename T>
+bool	isValidRoutePath(T& str)
+{
+	if (str.empty())
+		return false;
+	if (str[0] != '/')
+		return false;
+	for (size_t i = 0; i < str.size(); i++)
+	{
+		if (str[i] == '/' && str[i + 1] == '/')
+			return false;
+		if (!((str[i] >= 'a' && str[i] <= 'z') || (str[i] >= 'A' && str[i] <= 'Z')
+			|| (str[i] >= '0' && str[i] <= '9') || str[i] == '_' || str[i] == '/'))
+			return false;
+	}
 	return true;
 }
 
