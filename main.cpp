@@ -20,19 +20,15 @@ int	main(int ac, char **av, char **envp)
 		std::string	filename = av[1];
 		Webserv		webserv = Webserv(filename);
 		webserv.printServers();
+		webserv.setUpServers();
+		webserv.runServers();
+
 	}
 	catch(const std::exception& e)
 	{
 		std::cerr << "Exception thrown: " << e.what() << std::endl;
 	}
-
-	ServerList ServerList;
-
-	ServerList.config(av[1]);
-	if (ServerList.setup() == -1)
-		return(1);
-	ServerList.run();
-
+	
 
 	return EXIT_SUCCESS;
 }

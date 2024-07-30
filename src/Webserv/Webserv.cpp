@@ -500,6 +500,33 @@ void	Webserv::printServers()
 	
 }
 
+int	Webserv::setUpServers()
+{
+	for (std::vector<Server*>::iterator it = _servers.begin(); it != _servers.end(); ++it) {
+		Server* server = *it;
+		if(server->setUp() == -1)
+			return -1;
+	}
+	return 0;
+}
+
+void Webserv::runServers()
+{
+	for (std::vector<Server*>::iterator it = _servers.begin(); it != _servers.end(); ++it) {
+		Server* server = *it;
+		server->listen();
+	}
+	for (std::vector<Server*>::iterator it = _servers.begin(); it != _servers.end(); ++it) {
+		Server* server = *it;
+		server->accept();
+	}
+	for (std::vector<Server*>::iterator it = _servers.begin(); it != _servers.end(); ++it) {
+		Server* server = *it;
+		server->read();
+	}
+}
+
+
 const char *Webserv::FileOpenException::what() const throw()
 {
 	return "Couldn't open file";

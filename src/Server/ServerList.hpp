@@ -1,10 +1,9 @@
 #pragma once 
 
-#include "../Config/Config.hpp"
 
 #include "Server.hpp"
 
-class ServerList : public Config
+class ServerList
 {
     private:
         fd_set                      _fd_set;

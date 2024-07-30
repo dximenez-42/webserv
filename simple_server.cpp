@@ -22,6 +22,15 @@ int main() {
         return -1;
     }
 
+/*
+    SOCKET()
+    struct sockadds_in
+    BIND()
+    LISTEN()
+    ACCEPT()
+
+*/
+
     // Setting up the address struct
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;

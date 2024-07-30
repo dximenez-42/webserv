@@ -178,7 +178,7 @@ int Server::listen() {
         return -1;
     }
 
-    std::cout << "Server listening on port " << _server_port << std::endl;
+    std::cout << "Server " << _server_name << " listening on port " << _server_port << std::endl;
 	
 	return 0;
 }
@@ -193,6 +193,8 @@ int Server::accept() {
         close(_server_fd);
         return -1;
     }
+	else
+		std::cout << "Connection in " << _server_name << " on port " << _server_port << " accepted" << std::endl;
 
 	return 0;
 }
@@ -201,7 +203,10 @@ int Server::read() {
 	char buffer[BUFFER_SIZE] = {0};
 
 	int valread = ::read(_server_socket, buffer, BUFFER_SIZE);
-    std::cout << "Received message: " << buffer << std::endl;
+	if (valread > 0)
+    	std::cout << "Received message: " << buffer << std::endl;
+	else 
+    	std::cout << "Empty message" << std::endl;
 	return 0;
 }
 

@@ -53,6 +53,9 @@ class Webserv
 
 		void	printServers();
 
+		void	runServers();
+		int		setUpServers();
+
 		class FileOpenException : public std::exception
 		{
 			public:

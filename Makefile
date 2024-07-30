@@ -3,7 +3,6 @@ CXX			= c++
 CXXFLAGS	= -g3 -std=c++98 -Wall -Wextra -Werror
 
 SRCS		=	main.cpp\
-
 				src/Server/Server.cpp\
 				src/Webserv/Webserv.cpp
 
