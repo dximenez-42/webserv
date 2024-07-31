@@ -150,7 +150,7 @@ void	Webserv::parseServer(std::vector<std::string>& split, unsigned int line_num
 		}
 		if (!::isValidPath(::joinPaths<std::string>(_servers.back()->getServerRoot(), split[1])))
 			return newError(line_number, "invalid public path");
-		server->setServerPublic(::normalizePath(split[1]));
+		server->setServerPublic(::joinPaths<std::string>(_servers.back()->getServerRoot(), ::normalizePath(split[1])));
 	}
 	else if (split[0] == "public" && !server->getServerPublic().empty())
 		return newError(line_number, "public already defined");
@@ -185,7 +185,7 @@ void	Webserv::parseErrors(std::vector<std::string>& split, unsigned int line_num
 		return newError(line_number, "invalid error path");
 	ErrorPage	error;
 	error.code = split[0];
-	error.path = ::normalizePath(split[1]);
+	error.path = ::joinPaths<std::string>(_servers.back()->getServerRoot(), ::normalizePath(split[1]));
 
 	if (checkErrorExists(error))
 		return newError(line_number, "error code " + error.code + " already defined");
@@ -234,7 +234,10 @@ void	Webserv::parseRoutes(std::vector<std::string>& split, unsigned int line_num
 	Route	route;
 	route.method = split[0];
 	route.path = ::normalizePath(split[1]);
-	route.location = ::normalizePath(split[2]);
+	if (::isHttpRoute(split[2]))
+		route.location = split[2];
+	else
+		route.location = ::joinPaths(_servers.back()->getServerRoot(), ::normalizePath(split[2]));
 	if (checkRouteExists(route))
 		return newError(line_number, "route \"" + route.path + "\" with method " + route.method + " already defined");
 	_servers.back()->addRoute(route);
