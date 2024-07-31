@@ -155,4 +155,20 @@ std::string	itos(T number)
 	return result;
 }
 
+template <typename T>
+T	getPairValue(T str)
+{
+	std::string	key;
+	bool		found = false;
+
+	for (size_t i = 0; i < str.size(); i++)
+	{
+		if (str[i] == '=' && !found)
+			found = true;
+		else if (found)
+			key += str[i];
+	}
+	return key;
+}
+
 #endif
