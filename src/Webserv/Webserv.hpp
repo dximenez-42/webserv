@@ -10,7 +10,7 @@ class Webserv
 {
 	private:
 		std::string			_configFile;
-		std::ifstream	_input;
+		std::ifstream		_input;
 
 		std::vector<Server*>	_servers;
 
@@ -40,9 +40,12 @@ class Webserv
 		void	newError(unsigned int line_number, std::string error);
 
 
-		std::string	_access_log;
-		std::string	_error_log;
+		std::string			_access_log;
+		std::string			_error_log;
 
+
+		std::vector<int> 	_client_sockets;
+	
 	public:
 		Webserv(std::string config_file);
 		Webserv(const Webserv &webserv);
@@ -50,6 +53,8 @@ class Webserv
 		~Webserv();
 
 		std::vector<Server*>	getServers() const;
+
+
 
 		void	printServers();
 

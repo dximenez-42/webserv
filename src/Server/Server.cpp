@@ -92,6 +92,17 @@ std::vector<Route>			Server::getRoutes() const
 	return (_routes);
 }
 
+int		Server::getServerFd() const
+{
+	return (_server_fd);
+}
+
+struct sockaddr_in	Server::getServerAddress() const
+{
+	return (_address);
+}
+
+
 void	Server::setServerPort(int port)
 {
 	_server_port = port;
@@ -148,25 +159,57 @@ void	Server::addRoute(Route route)
 }
 
 
-int Server::setUp() {
-    struct sockaddr_in address;
+void Server::handleConnections() {
+	// Verificar si hay conexiones entrantes
+	if (FD_ISSET(_server_fd, &_read_fds)) {
+		int new_socket = ::accept(_server_fd, NULL, NULL);
+		if (new_socket < 0) {
+			std::cerr << "Error en accept" << std::endl;
+			exit(EXIT_FAILURE);
+		}
+		_client_sockets.push_back(new_socket);
+		std::cout << "Nueva conexión aceptada" << std::endl;
+	}
 
+	// Verificar actividad en clientes existentes
+	for (size_t i = 0; i < _client_sockets.size(); ++i) {
+		if (FD_ISSET(_client_sockets[i], &_read_fds)) {
+			char buffer[1024] = {0};
+			int valread = ::read(_client_sockets[i], buffer, 1024);
+			if (valread == 0) {
+				// Cliente desconectado
+				close(_client_sockets[i]);
+				_client_sockets.erase(_client_sockets.begin() + i);
+				--i; // Ajustar índice tras eliminar
+				std::cout << "Cliente desconectado" << std::endl;
+			} else {
+				// Responder al cliente
+				std::cout << "Mensaje recibido: " << buffer << std::endl;
+				::send(_client_sockets[i], "Hello, Client!", 14, 0);
+			}
+		}
+	}
+}
+
+
+int Server::setUp() 
+{
     _server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (_server_fd == 0) {
         std::cerr << "Socket failed" << std::endl;
         return -1;
     }
 
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(_server_port);
+    _address.sin_family = AF_INET;
+    _address.sin_addr.s_addr = INADDR_ANY;
+    _address.sin_port = htons(_server_port);
 
-    if (bind(_server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
+    if (bind(_server_fd, (struct sockaddr*)&_address, sizeof(_address)) < 0) {
         std::cerr << "Bind failed" << std::endl;
         close(_server_fd);
         return -1;
     }
-
+	std::cout << "Server " << _server_name << " setted up" << std::endl;
 	return 0;
 }
 
@@ -185,13 +228,14 @@ int Server::listen() {
 
 
 int Server::accept() {
-    int addrlen = sizeof(address);
-
-    _server_socket = ::accept(_server_fd, (struct sockaddr*)&address, (socklen_t*)&addrlen);
+    int addrlen = sizeof(_address);
+	std::cout << htons(_address.sin_port) << std::endl;
+	
+    _server_socket = ::accept(_server_fd, (struct sockaddr*)&_address, (socklen_t*)&addrlen);
     if (_server_socket < 0) {
         std::cerr << "Accept failed" << std::endl;
         close(_server_fd);
-        return -1;
+		exit(EXIT_FAILURE);
     }
 	else
 		std::cout << "Connection in " << _server_name << " on port " << _server_port << " accepted" << std::endl;

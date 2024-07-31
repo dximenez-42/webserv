@@ -506,23 +506,72 @@ int	Webserv::setUpServers()
 		Server* server = *it;
 		if(server->setUp() == -1)
 			return -1;
+		server->listen();
 	}
 	return 0;
 }
 
 void Webserv::runServers()
 {
-	for (std::vector<Server*>::iterator it = _servers.begin(); it != _servers.end(); ++it) {
-		Server* server = *it;
-		server->listen();
-	}
-	for (std::vector<Server*>::iterator it = _servers.begin(); it != _servers.end(); ++it) {
-		Server* server = *it;
-		server->accept();
-	}
-	for (std::vector<Server*>::iterator it = _servers.begin(); it != _servers.end(); ++it) {
-		Server* server = *it;
-		server->read();
+	fd_set readfds;
+	int max_sd;
+
+	while (true) {
+		FD_ZERO(&readfds);
+		max_sd = 0;
+
+		// Agregar descriptores de los servidores
+		for (std::vector<Server*>::iterator it = _servers.begin(); it != _servers.end(); ++it) {
+    		Server* server = *it;
+			FD_SET(server->getServerFd(), &readfds);
+			max_sd = std::max(max_sd, server->getServerFd());
+		}
+
+		// Agregar descriptores de los clientes
+		for (std::vector<int>::iterator it = _client_sockets.begin(); it != _client_sockets.end(); ++it) {
+    		int client_socket = *it;
+			FD_SET(client_socket, &readfds);
+			std::cout << "Loko " << FD_ISSET(client_socket, &readfds) << std::endl;
+			max_sd = std::max(max_sd, client_socket);
+		}
+
+		// Esperar actividad
+		int activity = select(max_sd + 1, &readfds, NULL, NULL, NULL);
+		if ((activity < 0) && (errno != EINTR)) {
+			std::cerr << "Error en select" << std::endl;
+			exit(EXIT_FAILURE);
+		}
+
+		// Verificar nuevos clientes
+		for (std::vector<Server*>::iterator it = _servers.begin(); it != _servers.end(); ++it) {
+		    Server* server = *it;
+			if (FD_ISSET(server->getServerFd(), &readfds)) {
+				int new_socket = server->accept();
+				_client_sockets.push_back(new_socket);
+				std::cout << "Nueva conexión aceptada en puerto: " << server->getServerPort() << std::endl;
+			}
+		}
+
+		// Verificar actividad en los clientes
+		for (std::vector<int>::iterator it = _client_sockets.begin(); it != _client_sockets.end();) {
+    		int client_socket = *it;
+			std::cout << FD_ISSET(client_socket, &readfds) << std::endl;
+			if (FD_ISSET(client_socket, &readfds)) {
+				char buffer[1024] = {0};
+				ssize_t valread = recv(client_socket, buffer, 1024, 0);
+				if (valread == 0) {
+					close(client_socket);
+					std::cout << "Cliente desconectado" << std::endl;
+					it = _client_sockets.erase(it);
+				} else {
+					std::cout << "Mensaje recibido: " << buffer << std::endl;
+					send(client_socket, "Hello, Client!", 14, 0);
+					++it;
+				}
+			} else {
+				++it;
+			}
+		}
 	}
 }
 

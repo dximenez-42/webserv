@@ -21,22 +21,24 @@ struct Route
 class Server
 {
 	private:
-		int				_server_port;
-		std::string		_server_host;
-		std::string		_server_name;
-		std::string		_server_index;
-		int				_server_dir_listing;
-		std::string		_server_root;
-		std::string		_server_public;
-		int				_limit_body_size;
+		int							_server_port;
+		std::string					_server_host;
+		std::string					_server_name;
+		std::string					_server_index;
+		int							_server_dir_listing;
+		std::string					_server_root;
+		std::string					_server_public;
+		int							_limit_body_size;
 		
 		std::vector<ErrorPage>		_error_pages;
 		std::vector<std::string>	_methods;
 		std::vector<Route>			_routes;
 
-		int					_server_fd;
-		int					_server_socket;
-	    struct sockaddr_in 	address;
+		int							_server_fd;
+		int							_server_socket;
+	    struct sockaddr_in 			_address;
+		fd_set 						_read_fds;
+		std::vector<int> 			_client_sockets;
 
 	public:
 		Server();
@@ -44,17 +46,19 @@ class Server
 		Server &operator=(const Server &other);
 		~Server();
 
-		int				getServerPort() const;
-		std::string		getServerHost() const;
-		std::string		getServerName() const;
-		std::string		getServerIndex() const;
-		int				getServerDirListing() const;
-		std::string		getServerRoot() const;
-		std::string		getServerPublic() const;
-		int				getLimitBodySize() const;
+		int							getServerPort() const;
+		std::string					getServerHost() const;
+		std::string					getServerName() const;
+		std::string					getServerIndex() const;
+		int							getServerDirListing() const;
+		std::string					getServerRoot() const;
+		std::string					getServerPublic() const;
+		int							getLimitBodySize() const;
 		std::vector<ErrorPage>		getErrorPages() const;
 		std::vector<std::string>	getMethods() const;
 		std::vector<Route>			getRoutes() const;
+		int							getServerFd() const;
+		struct sockaddr_in			getServerAddress() const;
 
 		void	setServerPort(int port);
 		void	setServerHost(std::string host);
@@ -68,6 +72,7 @@ class Server
 		void	addMethod(std::string method);
 		void	addRoute(Route route);
 
+		void	handleConnections();
 		int		setUp();
 		int		listen();
 		int		accept();
