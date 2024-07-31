@@ -75,21 +75,13 @@ bool	isValidPath(const T str)
 {
 	if (str.empty())
 		return false;
-	std::cout << "isValidPath: " << str << "\t";
 	for (size_t i = 0; i < str.size(); i++)
 	{
 		if (str[i] == '/' && str[i + 1] == '/')
-		{
-			std::cout << "false" << std::endl;
 			return false;
-		}
 	}
 	if (access(str.c_str(), F_OK) == -1)
-	{
-		std::cout << "false" << std::endl;
 		return false;
-	}
-	std::cout << "true" << std::endl;
 	return true;
 }
 
@@ -126,14 +118,9 @@ bool	isHttpRoute(const T str)
 {
 	if (str.empty())
 		return false;
-	std::cout << "isHttpRoute: " << str << "\t";
 	if ((str[0] == 'h' && str[1] == 't' && str[2] == 't' && str[3] == 'p' && str[4] == ':' && str[5] == '/' && str[6] == '/')
 		|| (str[0] == 'h' && str[1] == 't' && str[2] == 't' && str[3] == 'p' && str[4] == 's' && str[5] == ':' && str[6] == '/' && str[7] == '/'))
-	{
-		std::cout << "true" << std::endl;
 		return true;
-	}
-	std::cout << "false" << std::endl;
 	return false;
 }
 
