@@ -71,45 +71,40 @@ bool	onlySpaces(T& str)
  * @return true if the path is valid, false otherwise
  */
 template <typename T>
-bool	isValidPath(T& str)
+bool	isValidPath(const T str)
 {
 	if (str.empty())
 		return false;
+	std::cout << "isValidPath: " << str << "\t";
 	for (size_t i = 0; i < str.size(); i++)
 	{
 		if (str[i] == '/' && str[i + 1] == '/')
+		{
+			std::cout << "false" << std::endl;
 			return false;
+		}
 	}
 	if (access(str.c_str(), F_OK) == -1)
+	{
+		std::cout << "false" << std::endl;
 		return false;
+	}
+	std::cout << "true" << std::endl;
 	return true;
-}
-
-template <typename T>
-bool	isValidRelativePath(T& str)
-{
-	if (str.empty())
-		return false;
-	if (str[0] == '/')
-		return false;
-	return isValidPath(str);
 }
 
 template <typename T>
 T&	normalizePath(T& src)
 {
-	for (size_t i = 0; i < src.size(); i++)
-	{
-		if (src[i] == '/' && i == 0)
-			src.erase(0, 1);
-		if (src[i] == '/' && i == src.size() - 1)
-			src.erase(src.size() - 1, src.size());
-	}
+	if (src[0] == '/')
+		src.erase(0, 1);
+	if (src[src.size() - 1] == '/')
+		src.erase(src.size() - 1, src.size());
 	return src;
 }
 
 template <typename T>
-bool	isValidRoutePath(T& str)
+bool	isValidRoutePath(const T str)
 {
 	if (str.empty())
 		return false;
@@ -125,6 +120,29 @@ bool	isValidRoutePath(T& str)
 	}
 	return true;
 }
+
+template <typename T>
+bool	isHttpRoute(const T str)
+{
+	if (str.empty())
+		return false;
+	std::cout << "isHttpRoute: " << str << "\t";
+	if ((str[0] == 'h' && str[1] == 't' && str[2] == 't' && str[3] == 'p' && str[4] == ':' && str[5] == '/' && str[6] == '/')
+		|| (str[0] == 'h' && str[1] == 't' && str[2] == 't' && str[3] == 'p' && str[4] == 's' && str[5] == ':' && str[6] == '/' && str[7] == '/'))
+	{
+		std::cout << "true" << std::endl;
+		return true;
+	}
+	std::cout << "false" << std::endl;
+	return false;
+}
+
+template <typename T>
+T	joinPaths(const T& str1, const T& str2)
+{
+	return str1 + "/" + str2;
+}
+
 
 template <typename T>
 std::string	itos(T number)

@@ -58,7 +58,7 @@ void	Webserv::parseHttp(std::vector<std::string>& split, unsigned int line_numbe
 
 	if (split[0] == "access_log" && _access_log.empty())
 	{
-		if (!::isValidRelativePath(split[1]) && split[1] != "/dev/stdout" && split[1] != "/dev/stderr" && split[1] != "/dev/null")
+		if (!::isValidPath(split[1]) && split[1] != "/dev/stdout" && split[1] != "/dev/stderr" && split[1] != "/dev/null")
 			return newError(line_number, "invalid access path");
 		_access_log = split[1];
 	}
@@ -66,7 +66,7 @@ void	Webserv::parseHttp(std::vector<std::string>& split, unsigned int line_numbe
 		return newError(line_number, "access_log already defined");
 	else if (split[0] == "error_log" && _error_log.empty())
 	{
-		if (!::isValidRelativePath(split[1]) && split[1] != "/dev/stdout" && split[1] != "/dev/stderr" && split[1] != "/dev/null")
+		if (!::isValidPath(split[1]) && split[1] != "/dev/stdout" && split[1] != "/dev/stderr" && split[1] != "/dev/null")
 			return newError(line_number, "invalid error path");
 		_error_log = split[1];
 	}
@@ -135,7 +135,9 @@ void	Webserv::parseServer(std::vector<std::string>& split, unsigned int line_num
 	{
 		if (!::isValidPath(split[1]))
 			return newError(line_number, "invalid root path");
-		server->setServerRoot(::normalizePath(split[1]));
+		if (split[1][split[1].length() - 1] == '/')
+			split[1].erase(split[1].length() - 1, split[1].length());
+		server->setServerRoot(split[1]);
 	}
 	else if (split[0] == "root" && !server->getServerRoot().empty())
 		return newError(line_number, "root already defined");
@@ -146,7 +148,7 @@ void	Webserv::parseServer(std::vector<std::string>& split, unsigned int line_num
 			_open_blocks.push_back(BAD);
 			return newError(line_number, "root must be defined before public");
 		}
-		if (!::isValidRelativePath(split[1]))		// TODO join path with root
+		if (!::isValidPath(::joinPaths<std::string>(_servers.back()->getServerRoot(), split[1])))
 			return newError(line_number, "invalid public path");
 		server->setServerPublic(::normalizePath(split[1]));
 	}
@@ -179,7 +181,7 @@ void	Webserv::parseErrors(std::vector<std::string>& split, unsigned int line_num
 		return newError(line_number, "root must be defined before errors");
 	}
 
-	if (!::isValidRelativePath(split[1]))		// TODO join path with root
+	if (!::isValidPath(::joinPaths<std::string>(_servers.back()->getServerRoot(), split[1])))
 		return newError(line_number, "invalid error path");
 	ErrorPage	error;
 	error.code = split[0];
@@ -227,7 +229,7 @@ void	Webserv::parseRoutes(std::vector<std::string>& split, unsigned int line_num
 		return newError(line_number, "method " + split[0] + " is unsupported");
 	if (!::isValidRoutePath(split[1]))
 		return newError(line_number, "invalid route path");
-	if (!::isValidRelativePath(split[2]))		// TODO join path with root
+	if (!::isValidPath(::joinPaths(_servers.back()->getServerRoot(), split[2])) && !::isHttpRoute(split[2]))
 		return newError(line_number, "invalid route location");
 	Route	route;
 	route.method = split[0];
