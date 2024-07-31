@@ -4,6 +4,8 @@
 #include <stdlib.h>
 
 #include "src/Utils/Enums.hpp"
+#include "src/Utils/Structs.hpp"
+
 #include "src/Utils/String.hpp"
 #include "src/Utils/Vector.hpp"
 
