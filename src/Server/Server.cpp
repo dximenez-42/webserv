@@ -10,6 +10,8 @@ Server::Server()
 	_server_root = "";
 	_server_public = "";
 	_limit_body_size = 0;
+	this->setUp();
+	this->listen();
 }
 
 Server::Server(const Server &src)
@@ -222,7 +224,6 @@ int Server::listen() {
     }
 
     std::cout << "Server " << _server_name << " listening on port " << _server_port << std::endl;
-	
 	return 0;
 }
 

@@ -2,6 +2,7 @@
 
 Webserv::Webserv(std::string config_file) : AConfig(config_file)
 {
+
 }
 
 Webserv::Webserv(const Webserv &webserv) : AConfig(webserv)
@@ -20,54 +21,6 @@ Webserv &Webserv::operator=(const Webserv &webserv)
 
 Webserv::~Webserv()
 {
-}
-
-
-void	Webserv::printServers()
-{
-	std::cout << "access_log:\t\t" << _access_log << std::endl;
-	std::cout << "error_log:\t\t" << _error_log << std::endl << std::endl;
-
-	for (size_t i = 0; i < _servers.size(); i++)
-	{
-		std::cout << "\033[1;32mServer #" << i + 1 << "\033[0m" << std::endl;
-		std::cout << "server_port:\t\t" << _servers[i]->getServerPort() << std::endl;
-		std::cout << "server_name:\t\t" << _servers[i]->getServerName() << std::endl;
-		std::cout << "server_index:\t\t" << _servers[i]->getServerIndex() << std::endl;
-		std::cout << "server_dir_listing:\t" << _servers[i]->getServerDirListing() << std::endl;
-		std::cout << "server_root:\t\t" << _servers[i]->getServerRoot() << std::endl;
-		std::cout << "server_public:\t\t" << _servers[i]->getServerPublic() << std::endl;
-		std::cout << "limit_body_size:\t" << _servers[i]->getLimitBodySize() << std::endl;
-
-		if (!_servers[i]->getErrorPages().empty())
-		{
-			std::cout << "error_pages:" << std::endl;
-			for (size_t j = 0; j < _servers[i]->getErrorPages().size(); j++)
-			{
-				std::cout	<< "\terror_code: \"" << _servers[i]->getErrorPages()[j].code
-							<< "\", error_page: \"" << _servers[i]->getErrorPages()[j].path << "\"" << std::endl;
-			}
-		}
-		if (!_servers[i]->getMethods().empty())
-		{
-			std::cout << "methods:" << std::endl;
-			for (size_t j = 0; j < _servers[i]->getMethods().size(); j++)
-			{
-				std::cout << "\t" << _servers[i]->getMethods()[j] << std::endl;
-			}
-		}
-		if (!_servers[i]->getRoutes().empty())
-		{
-			std::cout << "methods:" << std::endl;
-			for (size_t j = 0; j < _servers[i]->getRoutes().size(); j++)
-			{
-				std::cout	<< "\tmethod: \"" << _servers[i]->getRoutes()[j].method
-							<< "\", path: \"" << _servers[i]->getRoutes()[j].path
-							<< "\", location: \"" << _servers[i]->getRoutes()[j].location << "\"" << std::endl;
-			}
-		}
-		std::cout << std::endl << std::endl;
-	}
 }
 
 int	Webserv::setUpServers()
@@ -126,14 +79,23 @@ void Webserv::runServers()
     		int client_socket = *it;
 			if (FD_ISSET(client_socket, &readfds)) {
 				char buffer[BUFFER_SIZE] = {0};
-				ssize_t valread = recv(client_socket, buffer, BUFFER_SIZE, 0);
+				ssize_t valread = readRequest(client_socket);
 				if (valread == 0) {
 					close(client_socket);
 					std::cout << "Cliente desconectado" << std::endl;
 					it = _client_sockets.erase(it);
 				} else {
 					std::cout << "Mensaje recibido: " << buffer << std::endl;
-					send(client_socket, "Hello, Client!", 14, 0);
+				//Aquí se gestionaría la API --------------------------------
+					std::string httpResponse =
+						"HTTP/1.1 200 OK\r\n"
+						"Content-Type: text/plain\r\n"
+						"Content-Length: 14\r\n"
+						"\r\n"
+						"Hello, Client!";
+
+					send(client_socket, httpResponse.c_str(), httpResponse.length(), 0);
+				//-----------------------------------------------------------
 					++it;
 				}
 			} else {
@@ -141,4 +103,49 @@ void Webserv::runServers()
 			}
 		}
 	}
+}
+
+int		Webserv::readRequest(int client_socket) {
+	std::vector<char> requestData;
+	char buffer[BUFFER_SIZE];
+	ssize_t valread;
+	bool requestComplete = false;
+
+	while (!requestComplete && (valread = recv(client_socket, buffer, BUFFER_SIZE, 0)) > 0) {
+		requestData.insert(requestData.end(), buffer, buffer + valread);
+
+		std::string requestString(requestData.begin(), requestData.end());
+		size_t headerEnd = requestString.find("\r\n\r\n");
+		if (headerEnd != std::string::npos) {
+			size_t contentLengthPos = requestString.find("Content-Length:");
+			if (contentLengthPos != std::string::npos) {
+				size_t contentLengthStart = contentLengthPos + 15;
+				size_t contentLengthEnd = requestString.find("\r\n", contentLengthStart);
+				std::string contentLengthStr = requestString.substr(contentLengthStart, contentLengthEnd - contentLengthStart);
+				int contentLength = std::stoi(contentLengthStr);
+
+				if (requestData.size() >= headerEnd + 4 + contentLength) {
+					requestComplete = true;
+				}
+			} else if (requestString.find("Transfer-Encoding: chunked") != std::string::npos) {
+				size_t pos = headerEnd + 4;
+				while (pos < requestData.size()) {
+					size_t chunkSizeEnd = requestString.find("\r\n", pos);
+					int chunkSize = std::stoi(requestString.substr(pos, chunkSizeEnd - pos), nullptr, 16);
+					pos = chunkSizeEnd + 2;
+					pos += chunkSize + 2;
+					if (chunkSize == 0) {
+						requestComplete = true;
+						break;
+					}
+				}
+			} else {
+				requestComplete = true;
+			}
+		}
+	}
+	std::string requestString(requestData.begin(), requestData.end());
+	std::cout << "Request data: " << requestString << std::endl;
+	return (valread);
+
 }

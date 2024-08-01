@@ -16,9 +16,9 @@ class Webserv : public AConfig
 		Webserv &operator=(const Webserv &webserv);
 		~Webserv();
 
-		int		setUpServers();
-		void	printServers();
-		void	runServers();
+		int				setUpServers();
+		void			runServers();
+		int		readRequest(int);
 };
 
 #endif
