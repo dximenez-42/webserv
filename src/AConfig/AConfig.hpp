@@ -6,52 +6,10 @@
 #include <fstream>
 #include <vector>
 #include "../../includes.hpp"
+#include "../Server/Server.hpp"
 
-struct ErrorPage
+class AConfig
 {
-	std::string		code;
-	std::string		path;
-};
-
-struct Route
-{
-	std::string		method;
-	std::string		path;
-	std::string		location;
-};
-
-enum OpenCfg
-{
-	NONE,
-	BAD,
-	HTTP,
-	SERVER,
-	ERRORS,
-	METHODS,
-	ROUTES
-};
-
-class Config
-{
-	protected:
-		std::string		_filename;
-
-		std::string		_access_log;
-		std::string		_error_log;
-
-		int				_server_port;
-		std::string		_server_host;
-		std::string		_server_name;
-		std::string		_server_index;
-		short			_server_dir_listing;
-		std::string		_server_root;
-		std::string		_server_public;
-		int				_limit_body_size;
-		
-		std::vector<ErrorPage>		_error_pages;
-		std::vector<std::string>	_methods;
-		std::vector<Route>			_routes;
-
 	private:
 		std::ifstream	_input;
 
@@ -64,7 +22,8 @@ class Config
 		int		_methods_location;
 		int		_routes_location;
 
-		void	parseLine(std::string& line, unsigned int line_number);
+		void	parseConfig();
+		void	parseLine(std::string line, unsigned int line_number);
 
 		void	parseHttp(std::vector<std::string>& split, unsigned int line_number);
 		void	parseServer(std::vector<std::string>& split, unsigned int line_number);
@@ -76,18 +35,26 @@ class Config
 		bool	checkMethodExists(std::string& method);
 		bool	checkRouteExists(Route& route);
 
+		void	checkConfig();
 		void	newError(unsigned int line_number, std::string error);
 
-		void	checkConfig();
+	protected:
+		std::string	_configFile;
+
+		std::string	_access_log;
+		std::string	_error_log;
+
+		std::vector<Server*>	_servers;
 
 	public:
-		Config(std::string& filename);
-		Config(Config const &src);
-		Config& operator=(Config const &rhs);
-		virtual ~Config() = 0;
+		AConfig(std::string config_file);
+		AConfig(AConfig const &src);
+		AConfig& operator=(AConfig const &rhs);
+		virtual ~AConfig() = 0;
 
-		void	parseConfig();
-		void	printConfig();
+		std::vector<Server*>	getServers() const;
+
+		void	printServers();
 
 		class FileOpenException : public std::exception
 		{
@@ -95,11 +62,6 @@ class Config
 				virtual const char *what() const throw();
 		};
 		class ConfigErrorException : public std::exception
-		{
-			public:
-				virtual const char *what() const throw();
-		};
-		class ConfigIncompleteException : public std::exception
 		{
 			public:
 				virtual const char *what() const throw();
