@@ -228,11 +228,12 @@ int Server::listen() {
 
 
 int Server::accept() {
+	int new_socket;
     int addrlen = sizeof(_address);
 	std::cout << htons(_address.sin_port) << std::endl;
 	
-    _server_socket = ::accept(_server_fd, (struct sockaddr*)&_address, (socklen_t*)&addrlen);
-    if (_server_socket < 0) {
+    new_socket = ::accept(_server_fd, (struct sockaddr*)&_address, (socklen_t*)&addrlen);
+    if (new_socket < 0) {
         std::cerr << "Accept failed" << std::endl;
         close(_server_fd);
 		exit(EXIT_FAILURE);
@@ -240,7 +241,7 @@ int Server::accept() {
 	else
 		std::cout << "Connection in " << _server_name << " on port " << _server_port << " accepted" << std::endl;
 
-	return 0;
+	return new_socket;
 }
 
 int Server::read() {

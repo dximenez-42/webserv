@@ -531,7 +531,6 @@ void Webserv::runServers()
 		for (std::vector<int>::iterator it = _client_sockets.begin(); it != _client_sockets.end(); ++it) {
     		int client_socket = *it;
 			FD_SET(client_socket, &readfds);
-			std::cout << "Loko " << FD_ISSET(client_socket, &readfds) << std::endl;
 			max_sd = std::max(max_sd, client_socket);
 		}
 
@@ -555,10 +554,9 @@ void Webserv::runServers()
 		// Verificar actividad en los clientes
 		for (std::vector<int>::iterator it = _client_sockets.begin(); it != _client_sockets.end();) {
     		int client_socket = *it;
-			std::cout << FD_ISSET(client_socket, &readfds) << std::endl;
 			if (FD_ISSET(client_socket, &readfds)) {
-				char buffer[1024] = {0};
-				ssize_t valread = recv(client_socket, buffer, 1024, 0);
+				char buffer[BUFFER_SIZE] = {0};
+				ssize_t valread = recv(client_socket, buffer, BUFFER_SIZE, 0);
 				if (valread == 0) {
 					close(client_socket);
 					std::cout << "Cliente desconectado" << std::endl;
