@@ -4,20 +4,6 @@
 #include "../../includes.hpp"
 #include <iostream>
 
-struct ErrorPage
-{
-
-	std::string		code;
-	std::string		path;
-};
-
-struct Route
-{
-	std::string		method;
-	std::string		path;
-	std::string		location;
-};
-
 class Server
 {
 	private:
