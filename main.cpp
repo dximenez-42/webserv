@@ -33,11 +33,10 @@ int	main(int ac, char **av, char **envp)
 		std::string	filename = av[1];
 		Webserv		webserv = Webserv(filename);
 
-
 		// webserv.printServers();
 
-		Request	req(post_request());
-		req.printRequest();
+		//Request	req(post_request());
+		//req.printRequest();
 		
 		webserv.printServers();
 		webserv.setUpServers();

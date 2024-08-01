@@ -2,7 +2,6 @@
 
 Webserv::Webserv(std::string config_file) : AConfig(config_file)
 {
-	
 }
 
 Webserv::Webserv(const Webserv &webserv) : AConfig(webserv)
@@ -69,7 +68,6 @@ void	Webserv::printServers()
 		}
 		std::cout << std::endl << std::endl;
 	}
-	
 }
 
 int	Webserv::setUpServers()
