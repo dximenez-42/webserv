@@ -18,13 +18,14 @@ class Request
 		std::vector<FormField>	_form;
 
 	public:
-		Request(std::string str);
+		Request() {};
+		//Request(std::string str);
 		Request(const Request& src);
 		Request& operator=(const Request& rhs);
 		~Request();
 
-		void	printRequest();
-
+		void			printRequest();
+		void			fillRequest(std::string str);
 		std::string				getMethod() const;
 		std::string				getUri() const;
 		std::string				getHttpVersion() const;

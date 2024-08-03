@@ -155,6 +155,7 @@ std::string	itos(T number)
 	return result;
 }
 
+
 template <typename T>
 T	getPairValue(T str)
 {

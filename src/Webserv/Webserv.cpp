@@ -85,7 +85,7 @@ void Webserv::runServers()
 					std::cout << "Cliente desconectado" << std::endl;
 					it = _client_sockets.erase(it);
 				} else {
-					std::cout << "Mensaje recibido: " << buffer << std::endl;
+					_request.printRequest();
 				//Aquí se gestionaría la API --------------------------------
 					std::string httpResponse =
 						"HTTP/1.1 200 OK\r\n"
@@ -95,6 +95,7 @@ void Webserv::runServers()
 						"Hello, Client!";
 
 					send(client_socket, httpResponse.c_str(), httpResponse.length(), 0);
+
 				//-----------------------------------------------------------
 					++it;
 				}
@@ -145,7 +146,6 @@ int		Webserv::readRequest(int client_socket) {
 		}
 	}
 	std::string requestString(requestData.begin(), requestData.end());
-	std::cout << "Request data: " << requestString << std::endl;
+	_request.fillRequest(requestString);
 	return (valread);
-
 }

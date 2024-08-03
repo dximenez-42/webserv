@@ -9,7 +9,7 @@
 class Webserv : public AConfig
 {
 	private:
-		std::vector<int> 	_client_sockets;
+		std::vector<int> 		_client_sockets;
 	public:
 		Webserv(std::string config_file);
 		Webserv(const Webserv &webserv);
@@ -18,7 +18,7 @@ class Webserv : public AConfig
 
 		int				setUpServers();
 		void			runServers();
-		int		readRequest(int);
+		int				readRequest(int);
 };
 
 #endif

@@ -2,6 +2,7 @@
 #include "includes.hpp"
 #include "src/Webserv/Webserv.hpp"
 #include "src/Request/Request.hpp"
+#include <csignal>
 
 char *get_request()
 {
@@ -15,8 +16,16 @@ char *post_request()
 	return request;
 }
 
+void signalHandler(int signum) {
+    std::cout << "Interrupt signal (" << signum << ") received.\n";
+    // Cerrar sockets y limpiar recursos aquí
+    exit(signum);
+}
+
 int	main(int ac, char **av, char **envp)
 {
+    signal(SIGINT, signalHandler);
+
 	(void)envp;
 	if (ac != 2)
 	{
