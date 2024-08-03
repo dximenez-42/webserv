@@ -30,6 +30,10 @@ Request::Request(std::string str)
 			{
 				_content_boundary = ::getPairValue(words[2]);
 			}
+			else if (_content_type == "application/x-www-form-urlencoded")
+			{
+				in_form = true;
+			}
 		}
 		else if (words[0] == "Content-Length:")
 		{
@@ -40,7 +44,7 @@ Request::Request(std::string str)
 			form.key = ::getPairValue(words[2]);
 			in_form = true;
 		}
-		else if (in_form)
+		else if (in_form && _content_type == "multipart/form-data;")
 		{
 			if (lines[i].empty() && !form_empty_line)
 			{
@@ -61,6 +65,26 @@ Request::Request(std::string str)
 					form.value.append("\n");
 				form.value.append(lines[i]);
 			}
+		}
+		else if (in_form && _content_type == "application/x-www-form-urlencoded")
+		{
+			if (lines[i].empty() && !form_empty_line)
+			{
+				form_empty_line = true;
+				continue;
+			}
+			std::vector<std::string>	form_data = ::splitChar(lines[i], '&');
+
+			for (size_t i = 0; i < form_data.size(); i++)
+			{
+				form.key = ::getPairKey(form_data[i]);
+				form.value = ::getPairValue(form_data[i]);
+				_form.push_back(form);
+				form.key.clear();
+				form.value.clear();
+			}
+			in_form = false;
+			form_empty_line = false;
 		}
 	}
 }

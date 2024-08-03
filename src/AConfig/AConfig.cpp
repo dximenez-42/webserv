@@ -334,7 +334,7 @@ void	AConfig::parseLine(std::string line, unsigned int line_number)
 		case ROUTES:
 			routes_block = false;
 			break;
-		case NONE:
+		case NO_CFG:
 		case BAD:
 		case HTTP:
 			break;
