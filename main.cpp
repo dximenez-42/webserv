@@ -9,6 +9,12 @@ char *get_request()
 	return request;
 }
 
+char *post_request_body()
+{
+	char *request = "POST /body HTTP/1.1\r\nContent-Type: text/plain\r\nUser-Agent: PostmanRuntime/7.40.0\r\nAccept: */*\r\nPostman-Token: 623cb331-c03c-4927-a756-047ab86b3072\r\nHost: localhost:8085\r\nAccept-Encoding: gzip, deflate, br\r\nConnection: keep-alive\r\nContent-Length: 20\r\n\r\n{\r\n    \"json\": true\r\n}";
+	return request;
+}
+
 char *post_request_form1()
 {
 	char *request = "POST /form HTTP/1.1\r\nContent-Type: multipart/form-data; boundary=--------------------------463814737340599049118228\r\nContent-Length: 292\r\n\r\n----------------------------463814737340599049118228\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\ndani\r\nhola\r\n----------------------------463814737340599049118228\r\nContent-Disposition: form-data; name=\"surname\"\r\n\r\nximenez\r\n\r\nde\r\n\r\nembun\r\n----------------------------463814737340599049118228--";
@@ -40,8 +46,17 @@ int	main(int ac, char **av, char **envp)
 		Webserv		webserv = Webserv(filename);
 		// webserv.printServers();
 
-		Request	req(post_request_form2());
+		Request	req(get_request());
 		req.printRequest();
+
+		Request	req1(post_request_body());
+		req1.printRequest();
+
+		Request	req2(post_request_form1());
+		req2.printRequest();
+
+		Request	req3(post_request_form2());
+		req3.printRequest();
 	}
 	catch(const std::exception& e)
 	{
