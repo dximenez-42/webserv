@@ -2,7 +2,9 @@
 
 Webserv::Webserv(std::string config_file) : AConfig(config_file)
 {
-
+	this->printServers();
+	this->setUpServers();
+	this->runServers();
 }
 
 Webserv::Webserv(const Webserv &webserv) : AConfig(webserv)
@@ -19,9 +21,7 @@ Webserv &Webserv::operator=(const Webserv &webserv)
 	return *this;
 }
 
-Webserv::~Webserv()
-{
-}
+Webserv::~Webserv() {}
 
 int	Webserv::setUpServers()
 {
@@ -86,17 +86,7 @@ void Webserv::runServers()
 					it = _client_sockets.erase(it);
 				} else {
 					_request.printRequest();
-				//Aquí se gestionaría la API --------------------------------
-					std::string httpResponse =
-						"HTTP/1.1 200 OK\r\n"
-						"Content-Type: text/plain\r\n"
-						"Content-Length: 14\r\n"
-						"\r\n"
-						"Hello, Client!";
-
-					send(client_socket, httpResponse.c_str(), httpResponse.length(), 0);
-
-				//-----------------------------------------------------------
+					//Aquí pasaría a gestionar la api
 					++it;
 				}
 			} else {

@@ -10,8 +10,6 @@ Server::Server()
 	_server_root = "";
 	_server_public = "";
 	_limit_body_size = 0;
-	this->setUp();
-	this->listen();
 }
 
 Server::Server(const Server &src)

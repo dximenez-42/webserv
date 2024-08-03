@@ -1,5 +1,7 @@
 #include "Request.hpp"
 
+Request::Request() {};
+
 /*Request::Request(std::string str)
 {
 	std::cout << "Request: \n" << str << std::endl << std::endl;
@@ -170,3 +172,33 @@ void	Request::printRequest()
 		}
 	}
 }
+
+std::string				Request::getMethod() const 
+{
+	return _method;
+};
+
+std::string				Request::getUri() const
+{
+	return _uri;
+};
+
+std::string				Request::getHttpVersion() const
+{
+	return _http_version;
+};
+
+std::string				Request::getContentType() const
+{
+	return _content_type;
+};
+
+std::string				Request::getContentLength() const
+{
+	return _content_length;
+};
+
+std::vector<FormField>	Request::getForm() const
+{
+	return _form;
+};

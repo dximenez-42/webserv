@@ -3,6 +3,7 @@
 
 #include "../../includes.hpp"
 #include <iostream>
+#include "../Api/Api.hpp"
 
 class Server
 {
@@ -26,6 +27,7 @@ class Server
 		fd_set 						_read_fds;
 		std::vector<int> 			_client_sockets;
 
+		Api							_api;
 	public:
 		Server();
 		Server(const Server &other);

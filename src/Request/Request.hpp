@@ -18,7 +18,7 @@ class Request
 		std::vector<FormField>	_form;
 
 	public:
-		Request() {};
+		Request();
 		//Request(std::string str);
 		Request(const Request& src);
 		Request& operator=(const Request& rhs);

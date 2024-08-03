@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include "../AConfig/AConfig.hpp"
+#include "../Api/Api.hpp"
 
 class Webserv : public AConfig
 {
