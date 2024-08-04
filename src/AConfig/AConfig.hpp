@@ -6,8 +6,9 @@
 #include <fstream>
 #include <vector>
 #include "../../includes.hpp"
-#include "../Server/Server.hpp"
 #include "../Request/Request.hpp"
+
+class Server;
 
 class AConfig
 {
@@ -46,7 +47,6 @@ class AConfig
 		std::string				_error_log;
 
 		std::vector<Server*>	_servers;
-		Request					_request;
 
 	public:
 		AConfig(std::string config_file);

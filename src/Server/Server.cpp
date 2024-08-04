@@ -102,6 +102,10 @@ struct sockaddr_in	Server::getServerAddress() const
 	return (_address);
 }
 
+std::vector<int> 	Server::getClientSockets() const
+{
+	return _client_sockets;
+}
 
 void	Server::setServerPort(int port)
 {

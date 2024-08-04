@@ -27,7 +27,6 @@ class Server
 		fd_set 						_read_fds;
 		std::vector<int> 			_client_sockets;
 
-		Api							_api;
 	public:
 		Server();
 		Server(const Server &other);
@@ -47,6 +46,7 @@ class Server
 		std::vector<Route>			getRoutes() const;
 		int							getServerFd() const;
 		struct sockaddr_in			getServerAddress() const;
+		std::vector<int> 			getClientSockets() const;
 
 		void	setServerPort(int port);
 		void	setServerHost(std::string host);

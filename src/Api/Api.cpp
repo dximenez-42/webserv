@@ -1,28 +1,25 @@
 #include "Api.hpp"
 
-Api::Api(Server& server) : _server(server) {}
+
+Api::Api() {}
 
 Api::~Api() {}
 
 
-void   Api::setServer(Server *server)
+void    Api::sendResponse(Request  request, Server *server, int client_socket)
 {
-    _server = server;
-};
+    std::vector<std::string> serverMethods = server->getMethods();
+    
+    std::cout << "da segfault" << std::endl << std::endl;
 
+    for (std::vector<std::string>::iterator it = serverMethods.begin(); it < serverMethods.end(); it++)
+    {
+        std::string method = *it;
+        std::cout << method << std::endl;
+    }
+    std::cout << "no da segfault" << std::endl << std::endl;
+    
 
-int     Api::isMethodAccepted()
-{
-    if (_request.getMethod() == _servers.getMethods())
-};
-
-int     Api::pathExists()
-{
-
-};
-
-void    Api::sendResponse(int client_socket)
-{
     std::string httpResponse =
         "HTTP/1.1 200 OK\r\n"
         "Content-Type: text/plain\r\n"

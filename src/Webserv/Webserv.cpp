@@ -86,6 +86,10 @@ void Webserv::runServers()
 					it = _client_sockets.erase(it);
 				} else {
 					_request.printRequest();
+    			std::cout << "da segfault" << std::endl << std::endl;
+
+					_api.sendResponse(_request, findServer(client_socket), client_socket);
+
 					//Aquí pasaría a gestionar la api
 					++it;
 				}
@@ -95,6 +99,19 @@ void Webserv::runServers()
 		}
 	}
 }
+
+Server* Webserv::findServer(int client_socket) {
+    for (std::vector<Server*>::iterator it = _servers.begin(); it != _servers.end(); ++it) {
+        Server* server = *it;
+
+        std::vector<int> client_sockets = server->getClientSockets();
+        if (std::find(client_sockets.begin(), client_sockets.end(), client_socket) != client_sockets.end()) {
+            return server;
+        }
+    }
+    return nullptr;
+}
+
 
 int		Webserv::readRequest(int client_socket) {
 	std::vector<char> requestData;

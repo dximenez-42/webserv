@@ -1,19 +1,19 @@
 #pragma once
 #include "../AConfig/AConfig.hpp"
+#include "../Request/Request.hpp"
+#include "../Server/Server.hpp"
 
-class Api : public AConfig
+class Server;
+class Request;
+class Api
 {
     private:
-        Server& _server;
 
     public:
-        Api(Server& server);
+        Api();
         ~Api();
 
-        void    setServer(Server *server);
-        int     isMethodAccepted();
-        int     pathExists();
-        void    sendResponse(int);
+        void    sendResponse(Request , Server*, int client_socket);
 };
 
 

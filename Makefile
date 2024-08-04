@@ -6,7 +6,8 @@ SRCS		=	main.cpp\
 				src/Webserv/Webserv.cpp\
 				src/AConfig/AConfig.cpp\
 				src/Server/Server.cpp\
-				src/Request/Request.cpp
+				src/Request/Request.cpp\
+				src/Api/Api.cpp\
 
 OBJS		= $(SRCS:.cpp=.o)
 
