@@ -4,13 +4,14 @@ Request::Request() {};
 
 /*Request::Request(std::string str)
 {
-	std::cout << "Request: \n" << str << std::endl << std::endl;
+	// std::cout << "Request: \n" << str << std::endl << std::endl;
 
 
 	std::vector<std::string>	lines = ::splitChar(str, '\n');
 	FormField					form;
 	bool						in_form = false;
-	bool						form_empty_line = false;
+	bool						in_body = false;
+	bool						empty_line = false;
 
 
 	for (size_t i = 0; i < lines.size(); i++)
@@ -119,6 +120,14 @@ void	Request::fillRequest(std::string str) {
 			{
 				_content_boundary = ::getPairValue(words[2]);
 			}
+			else if (_content_type == "application/x-www-form-urlencoded")
+			{
+				in_form = true;
+			}
+			else if (_content_type == "text/plain")
+			{
+				in_body = true;
+			}
 		}
 		else if (words[0] == "Content-Length:")
 		{
@@ -129,11 +138,11 @@ void	Request::fillRequest(std::string str) {
 			form.key = ::getPairValue(words[2]);
 			in_form = true;
 		}
-		else if (in_form)
+		else if (in_form && _content_type == "multipart/form-data;" && !_content_length.empty())
 		{
-			if (lines[i].empty() && !form_empty_line)
+			if (lines[i].empty() && !empty_line)
 			{
-				form_empty_line = true;
+				empty_line = true;
 				continue;
 			}
 			if (std::string(lines[i]).find(_content_boundary) != std::string::npos)
@@ -142,7 +151,7 @@ void	Request::fillRequest(std::string str) {
 				form.key.clear();
 				form.value.clear();
 				in_form = false;
-				form_empty_line = false;
+				empty_line = false;
 			}
 			else
 			{
@@ -151,7 +160,42 @@ void	Request::fillRequest(std::string str) {
 				form.value.append(lines[i]);
 			}
 		}
+		else if (in_form && _content_type == "application/x-www-form-urlencoded" && !_content_length.empty())
+		{
+			if (lines[i].empty() && !empty_line)
+			{
+				empty_line = true;
+				continue;
+			}
+			std::vector<std::string>	form_data = ::splitChar(lines[i], '&');
+
+			for (size_t i = 0; i < form_data.size(); i++)
+			{
+				form.key = ::getPairKey(form_data[i]);
+				form.value = ::getPairValue(form_data[i]);
+				_form.push_back(form);
+				form.key.clear();
+				form.value.clear();
+			}
+			in_form = false;
+			empty_line = false;
+		}
+		else if (in_body && !_content_length.empty())
+		{
+			if (lines[i].empty() && !empty_line)
+			{
+				empty_line = true;
+				continue;
+			}
+
+			if (!_body.empty())
+				_body.append("\n");
+			_body.append(lines[i]);
+		}
+
+		words.clear();
 	}
+	lines.clear();
 }
 
 void	Request::printRequest()
@@ -171,6 +215,13 @@ void	Request::printRequest()
 						<< _form[i].value << std::endl;
 		}
 	}
+	
+	if (!_body.empty())
+	{
+		std::cout << "Body:" << std::endl << _body << std::endl;
+	}
+
+	std::cout << std::endl;
 }
 
 std::string				Request::getMethod() const 
