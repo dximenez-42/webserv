@@ -16,6 +16,7 @@ class Request
 		std::string				_content_boundary;
 		std::string				_content_length;
 		std::vector<FormField>	_form;
+		std::string				_body;
 
 	public:
 		Request(std::string str);
