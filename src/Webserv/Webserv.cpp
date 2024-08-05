@@ -38,6 +38,7 @@ void Webserv::runServers()
 {
 	fd_set readfds;
 	int max_sd;
+	Server* serverRequested;
 
 	while (true) {
 		FD_ZERO(&readfds);
@@ -70,6 +71,7 @@ void Webserv::runServers()
 			if (FD_ISSET(server->getServerFd(), &readfds)) {
 				int new_socket = server->accept();
 				_client_sockets.push_back(new_socket);
+				serverRequested = server;
 				std::cout << "Nueva conexión aceptada en puerto: " << server->getServerPort() << std::endl;
 			}
 		}
@@ -85,10 +87,10 @@ void Webserv::runServers()
 					std::cout << "Cliente desconectado" << std::endl;
 					it = _client_sockets.erase(it);
 				} else {
-					_request.printRequest();
-    			std::cout << "da segfault" << std::endl << std::endl;
-
-					_api.sendResponse(_request, findServer(client_socket), client_socket);
+					//_request.printRequest();
+    				std::cout << "llega" << std::endl << std::endl;
+					_api.setRequest(_request);
+					_api.sendResponse(serverRequested, client_socket);
 
 					//Aquí pasaría a gestionar la api
 					++it;
@@ -103,14 +105,13 @@ void Webserv::runServers()
 Server* Webserv::findServer(int client_socket) {
     for (std::vector<Server*>::iterator it = _servers.begin(); it != _servers.end(); ++it) {
         Server* server = *it;
-
-        std::vector<int> client_sockets = server->getClientSockets();
-        if (std::find(client_sockets.begin(), client_sockets.end(), client_socket) != client_sockets.end()) {
+        if (server->hasClientSocket(client_socket)) {  // Asegúrate de que esta función existe en Server
             return server;
         }
     }
-    return nullptr;
+    return nullptr;  // No se encontró el servidor para el cliente socket
 }
+
 
 
 int		Webserv::readRequest(int client_socket) {
@@ -153,6 +154,6 @@ int		Webserv::readRequest(int client_socket) {
 		}
 	}
 	std::string requestString(requestData.begin(), requestData.end());
-	_request.fillRequest(requestString);
+	_request->fillRequest(requestString);
 	return (valread);
 }

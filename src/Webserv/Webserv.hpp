@@ -6,13 +6,14 @@
 #include <iostream>
 #include "../AConfig/AConfig.hpp"
 #include "../Api/Api.hpp"
+class Request;
 
 class Webserv : public AConfig
 {
 	private:
 		std::vector<int> 		_client_sockets;
 		Api						_api;
-		Request					_request;
+		Request*				_request;
 
 	public:
 		Webserv(std::string config_file);

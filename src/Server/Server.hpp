@@ -59,6 +59,8 @@ class Server
 		void	addErrorPage(ErrorPage error);
 		void	addMethod(std::string method);
 		void	addRoute(Route route);
+		void	pushClientSocket(int);
+		bool	hasClientSocket(int) const;
 
 		void	handleConnections();
 		int		setUp();

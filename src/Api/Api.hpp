@@ -8,12 +8,13 @@ class Request;
 class Api
 {
     private:
-
+        Request *_request;
     public:
         Api();
         ~Api();
 
-        void    sendResponse(Request , Server*, int client_socket);
+        void    setRequest(Request *request);
+        void    sendResponse(Server*, int client_socket);
 };
 
 

@@ -6,19 +6,14 @@ Api::Api() {}
 Api::~Api() {}
 
 
-void    Api::sendResponse(Request  request, Server *server, int client_socket)
-{
-    std::vector<std::string> serverMethods = server->getMethods();
-    
-    std::cout << "da segfault" << std::endl << std::endl;
+void    Api::setRequest(Request* request) {
+    std::cout << "Request setted" << std::endl;
+}
 
-    for (std::vector<std::string>::iterator it = serverMethods.begin(); it < serverMethods.end(); it++)
-    {
-        std::string method = *it;
-        std::cout << method << std::endl;
-    }
-    std::cout << "no da segfault" << std::endl << std::endl;
-    
+void    Api::sendResponse(Server *server, int client_socket)
+{
+    std::cout << "Servidor seleccionado: " << std::endl;
+    std::cout << "Cliente socket: " << client_socket << std::endl;
 
     std::string httpResponse =
         "HTTP/1.1 200 OK\r\n"

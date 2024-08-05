@@ -4,14 +4,13 @@ Request::Request() {};
 
 /*Request::Request(std::string str)
 {
-	// std::cout << "Request: \n" << str << std::endl << std::endl;
+	std::cout << "Request: \n" << str << std::endl << std::endl;
 
 
 	std::vector<std::string>	lines = ::splitChar(str, '\n');
 	FormField					form;
 	bool						in_form = false;
-	bool						in_body = false;
-	bool						empty_line = false;
+	bool						form_empty_line = false;
 
 
 	for (size_t i = 0; i < lines.size(); i++)
@@ -93,12 +92,16 @@ Request::~Request()
 #include <stdio.h>
 
 void	Request::fillRequest(std::string str) {
-	std::cout << "Request: \n" << str << std::endl << std::endl << std::endl << std::endl;
+	// std::cout << "Request: \n" << str << std::endl << std::endl;
+
 
 	std::vector<std::string>	lines = ::splitChar(str, '\n');
 	FormField					form;
 	bool						in_form = false;
-	bool						form_empty_line = false;
+	bool						in_body = false;
+	bool						empty_line = false;
+
+	
 
 	for (size_t i = 0; i < lines.size(); i++)
 	{
@@ -109,13 +112,20 @@ void	Request::fillRequest(std::string str) {
 
 		if (words[0] == "GET" || words[0] == "POST" || words[0] == "DELETE")
 		{
+			std::cout << "Entra en method" << std::endl;
+			/*
 			_method = words[0];
 			_uri = words[1];
 			_http_version = words[2];
+			std::cout << _method << std::endl;
+			std::cout << _uri << std::endl;
+			*/
 		}
 		else if (words[0] == "Content-Type:")
 		{
+			std::cout << "Entra en content type" << std::endl;
 			_content_type = words[1];
+			/*
 			if (_content_type == "multipart/form-data;")
 			{
 				_content_boundary = ::getPairValue(words[2]);
@@ -128,10 +138,14 @@ void	Request::fillRequest(std::string str) {
 			{
 				in_body = true;
 			}
+			*/
 		}
 		else if (words[0] == "Content-Length:")
 		{
-			_content_length = words[1];
+			std::cout << "Entra en content length" << std::endl;
+			/*
+				_content_length = words[1];
+			*/
 		}
 		else if (words[0] == "Content-Disposition:" && words[1] == "form-data;" && _content_type == "multipart/form-data;")
 		{
@@ -215,13 +229,6 @@ void	Request::printRequest()
 						<< _form[i].value << std::endl;
 		}
 	}
-	
-	if (!_body.empty())
-	{
-		std::cout << "Body:" << std::endl << _body << std::endl;
-	}
-
-	std::cout << std::endl;
 }
 
 std::string				Request::getMethod() const 

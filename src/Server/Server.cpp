@@ -162,6 +162,15 @@ void	Server::addRoute(Route route)
 	_routes.push_back(route);
 }
 
+void Server::pushClientSocket(int clientSocket) {
+	_client_sockets.push_back(clientSocket);
+	std::cout << "Socket " << clientSocket << " pushed" << std::endl;
+}
+
+bool Server::hasClientSocket(int client_socket) const {
+    return std::find(_client_sockets.begin(), _client_sockets.end(), client_socket) != _client_sockets.end();
+}
+
 
 void Server::handleConnections() {
 	// Verificar si hay conexiones entrantes
