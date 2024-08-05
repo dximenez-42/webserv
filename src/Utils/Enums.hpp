@@ -3,7 +3,7 @@
 
 enum OpenCfg
 {
-	NONE,
+	NO_CFG,
 	BAD,
 	HTTP,
 	SERVER,

@@ -16,4 +16,11 @@ struct Route
 	std::string		location;
 };
 
+struct FormField
+{
+	std::string	key;
+	std::string	value;
+};
+
+
 #endif
