@@ -1,74 +1,19 @@
 #include "Request.hpp"
 
-Request::Request() {};
-
-/*Request::Request(std::string str)
+Request::Request()
 {
-	std::cout << "Request: \n" << str << std::endl << std::endl;
+	_method = "";
+	_uri = "";
+	_http_version = "";
+	_content_type = "";
+	_content_boundary = "";
+	_content_length = "";
+	_body = "";
 
-
-	std::vector<std::string>	lines = ::splitChar(str, '\n');
-	FormField					form;
-	bool						in_form = false;
-	bool						form_empty_line = false;
-
-
-	for (size_t i = 0; i < lines.size(); i++)
-	{
-		std::vector<std::string> words = ::splitSpaces(lines[i]);
-		
-		if (words.empty())
-			continue;
-
-		if (words[0] == "GET" || words[0] == "POST" || words[0] == "DELETE")
-		{
-			_method = words[0];
-			_uri = words[1];
-			_http_version = words[2];
-		}
-		else if (words[0] == "Content-Type:")
-		{
-			_content_type = words[1];
-			if (_content_type == "multipart/form-data;")
-			{
-				_content_boundary = ::getPairValue(words[2]);
-			}
-		}
-		else if (words[0] == "Content-Length:")
-		{
-			_content_length = words[1];
-		}
-		else if (words[0] == "Content-Disposition:" && words[1] == "form-data;" && _content_type == "multipart/form-data;")
-		{
-			form.key = ::getPairValue(words[2]);
-			in_form = true;
-		}
-		else if (in_form)
-		{
-			if (lines[i].empty() && !form_empty_line)
-			{
-				form_empty_line = true;
-				continue;
-			}
-			if (std::string(lines[i]).find(_content_boundary) != std::string::npos)
-			{
-				_form.push_back(form);
-				form.key.clear();
-				form.value.clear();
-				in_form = false;
-				form_empty_line = false;
-			}
-			else
-			{
-				if (!form.value.empty())
-					form.value.append("\n");
-				form.value.append(lines[i]);
-			}
-		}
-	}
-	std::cout << "Entra despues de inicializar" << std::endl;
-}
-*/
+	in_form = false;
+	in_body = false;
+	empty_line = false;
+};
 
 Request::Request(const Request& src)
 {
@@ -94,14 +39,7 @@ Request::~Request()
 void	Request::fillRequest(std::string str) {
 	// std::cout << "Request: \n" << str << std::endl << std::endl;
 
-
 	std::vector<std::string>	lines = ::splitChar(str, '\n');
-	FormField					form;
-	bool						in_form = false;
-	bool						in_body = false;
-	bool						empty_line = false;
-
-	
 
 	for (size_t i = 0; i < lines.size(); i++)
 	{
@@ -112,20 +50,13 @@ void	Request::fillRequest(std::string str) {
 
 		if (words[0] == "GET" || words[0] == "POST" || words[0] == "DELETE")
 		{
-			std::cout << "Entra en method" << std::endl;
-			/*
 			_method = words[0];
 			_uri = words[1];
 			_http_version = words[2];
-			std::cout << _method << std::endl;
-			std::cout << _uri << std::endl;
-			*/
 		}
 		else if (words[0] == "Content-Type:")
 		{
-			std::cout << "Entra en content type" << std::endl;
 			_content_type = words[1];
-			/*
 			if (_content_type == "multipart/form-data;")
 			{
 				_content_boundary = ::getPairValue(words[2]);
@@ -138,14 +69,10 @@ void	Request::fillRequest(std::string str) {
 			{
 				in_body = true;
 			}
-			*/
 		}
 		else if (words[0] == "Content-Length:")
 		{
-			std::cout << "Entra en content length" << std::endl;
-			/*
-				_content_length = words[1];
-			*/
+			_content_length = words[1];
 		}
 		else if (words[0] == "Content-Disposition:" && words[1] == "form-data;" && _content_type == "multipart/form-data;")
 		{

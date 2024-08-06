@@ -109,7 +109,7 @@ Server* Webserv::findServer(int client_socket) {
             return server;
         }
     }
-    return nullptr;  // No se encontró el servidor para el cliente socket
+    return 0;  // No se encontró el servidor para el cliente socket
 }
 
 
@@ -131,7 +131,7 @@ int		Webserv::readRequest(int client_socket) {
 				size_t contentLengthStart = contentLengthPos + 15;
 				size_t contentLengthEnd = requestString.find("\r\n", contentLengthStart);
 				std::string contentLengthStr = requestString.substr(contentLengthStart, contentLengthEnd - contentLengthStart);
-				int contentLength = std::stoi(contentLengthStr);
+				int contentLength = ::stoi(contentLengthStr);
 
 				if (requestData.size() >= headerEnd + 4 + contentLength) {
 					requestComplete = true;
@@ -140,7 +140,7 @@ int		Webserv::readRequest(int client_socket) {
 				size_t pos = headerEnd + 4;
 				while (pos < requestData.size()) {
 					size_t chunkSizeEnd = requestString.find("\r\n", pos);
-					int chunkSize = std::stoi(requestString.substr(pos, chunkSizeEnd - pos), nullptr, 16);
+					int chunkSize = ::stoi(requestString.substr(pos, chunkSizeEnd - pos), 16);		//TODO revisar que funciona correctamente
 					pos = chunkSizeEnd + 2;
 					pos += chunkSize + 2;
 					if (chunkSize == 0) {
@@ -154,6 +154,7 @@ int		Webserv::readRequest(int client_socket) {
 		}
 	}
 	std::string requestString(requestData.begin(), requestData.end());
+	_request = new Request();
 	_request->fillRequest(requestString);
 	return (valread);
 }

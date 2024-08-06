@@ -18,6 +18,12 @@ class Request
 		std::vector<FormField>	_form;
 		std::string				_body;
 
+	private:
+		FormField	form;
+		bool		in_form;
+		bool		in_body;
+		bool		empty_line;
+
 	public:
 		Request();
 		Request(std::string str);

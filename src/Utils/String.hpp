@@ -130,28 +130,49 @@ T	joinPaths(const T& str1, const T& str2)
 	return str1 + "/" + str2;
 }
 
+template <typename T>
+int	stoi(T str, int base = 10)
+{
+	int	result = 0;
+	int	sign = 1;
+	int	i = 0;
+
+	if (str[0] == '-')
+	{
+		sign = -1;
+		i++;
+	}
+	for (; i < str.size(); i++)
+	{
+		if (str[i] < '0' || str[i] > '9')
+			return 0;
+		result = result * base + str[i] - '0';
+	}
+	return result * sign;
+}
 
 template <typename T>
-std::string	itos(T number)
+std::string	itos(T number, int base = 10)
 {
 	std::string	result;
 	std::string	tmp;
+	int			sign = 1;
+	std::string	baseStr = "0123456789ABCDEF";
 
-	if (number == 0)
-		return "0";
-	if (number == -2147483648)
-		return "-2147483648";
 	if (number < 0)
 	{
-		result += '-';
+		sign = -1;
 		number *= -1;
 	}
 	while (number > 0)
 	{
-		tmp = number % 10 + '0';
-		result = tmp + result;
-		number /= 10;
+		tmp += baseStr[number % base];
+		number /= base;
 	}
+	if (sign == -1)
+		tmp += '-';
+	for (int i = tmp.size() - 1; i >= 0; i--)
+		result += tmp[i];
 	return result;
 }
 
