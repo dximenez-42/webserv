@@ -11,6 +11,7 @@ class Request
 	private:
 		std::string				_method;
 		std::string				_uri;
+		std::string				_normalizedUri;
 		std::string				_http_version;
 		std::string				_content_type;
 		std::string				_content_boundary;
@@ -35,6 +36,7 @@ class Request
 		void					fillRequest(std::string str);
 		std::string				getMethod() const;
 		std::string				getUri() const;
+		std::string				getNormalizedUri() const;
 		std::string				getHttpVersion() const;
 		std::string				getContentType() const;
 		std::string				getContentLength() const;

@@ -38,7 +38,6 @@ void Webserv::runServers()
 {
 	fd_set readfds;
 	int max_sd;
-	Server* serverRequested;
 
 	while (true) {
 		FD_ZERO(&readfds);
@@ -71,7 +70,8 @@ void Webserv::runServers()
 			if (FD_ISSET(server->getServerFd(), &readfds)) {
 				int new_socket = server->accept();
 				_client_sockets.push_back(new_socket);
-				serverRequested = server;
+				_api.setServer(server);
+
 				std::cout << "Nueva conexión aceptada en puerto: " << server->getServerPort() << std::endl;
 			}
 		}
@@ -89,9 +89,8 @@ void Webserv::runServers()
 				} else {
 					//_request.printRequest();
     				std::cout << "llega" << std::endl << std::endl;
-					_api.setRequest(_request);
-					_api.sendResponse(serverRequested, client_socket);
-
+					_api.handleRequest();
+					_api.sendResponse(client_socket);
 					//Aquí pasaría a gestionar la api
 					++it;
 				}
@@ -156,5 +155,6 @@ int		Webserv::readRequest(int client_socket) {
 	std::string requestString(requestData.begin(), requestData.end());
 	_request = new Request();
 	_request->fillRequest(requestString);
+	_api.setRequest(_request);
 	return (valread);
 }

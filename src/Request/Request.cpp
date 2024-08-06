@@ -52,6 +52,7 @@ void	Request::fillRequest(std::string str) {
 		{
 			_method = words[0];
 			_uri = words[1];
+			_normalizedUri = ::normalizePath(words[1]);
 			_http_version = words[2];
 		}
 		else if (words[0] == "Content-Type:")
@@ -166,6 +167,11 @@ std::string				Request::getMethod() const
 std::string				Request::getUri() const
 {
 	return _uri;
+};
+
+std::string				Request::getNormalizedUri() const
+{
+	return _normalizedUri;
 };
 
 std::string				Request::getHttpVersion() const
