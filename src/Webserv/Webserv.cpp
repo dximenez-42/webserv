@@ -89,8 +89,7 @@ void Webserv::runServers()
 				} else {
 					//_request.printRequest();
     				std::cout << "llega" << std::endl << std::endl;
-					_api.handleRequest();
-					_api.sendResponse(client_socket);
+					_api.handleRequest(client_socket);
 					//Aquí pasaría a gestionar la api
 					++it;
 				}

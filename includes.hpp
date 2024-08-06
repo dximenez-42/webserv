@@ -14,6 +14,8 @@
 #include <algorithm>
 #include <string>
 
+#include <fstream>
+#include <sstream>
 
 #include "src/Utils/Enums.hpp"
 #include "src/Utils/Structs.hpp"
