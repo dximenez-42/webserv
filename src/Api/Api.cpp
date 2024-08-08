@@ -29,30 +29,23 @@ void    Api::setServer(Server *server)
     _server = server;
 }
 
-
-
-
-Route* Api::findRoute() {
+Route Api::findRoute()
+{
     std::vector<Route> routes = _server->getRoutes();
-    std::string path = _request->getNormalizedUri();
-    std::string method = _request->getMethod();
-    bool pathExists = false;
 
-    for (std::vector<Route>::const_iterator it = routes.begin(); it != routes.end(); ++it) {
-        if (it->path == path) {
-            if (it->method == method) {
-                return const_cast<Route*>(&(*it));
-            }
-            pathExists = true; 
+    std::string uri = _request->getNormalizedUri();
+    std::string method = _request->getMethod();
+
+    for (size_t i = 0; i < routes.size(); i++)
+    {
+        if (routes[i].path == uri && routes[i].method == method)
+        {
+            return routes[i];
         }
     }
-    if (pathExists){
-        sendError(405);
-    }
-    else
-        sendError(404);
-    return NULL;
+    return Route();
 }
+
 
 bool endsWith(const std::string& str, const std::string& suffix) {
     if (str.size() < suffix.size()) {
@@ -267,13 +260,13 @@ void Api::handleRequest(int client_socket) {
     }
     std::vector<Route> routes = _server->getRoutes();
 
-    Route *route = findRoute();
+    Route route = findRoute();
 
-    if (route != NULL) {
-        if (route->location.find("http://") == 0 || route->location.find("https://") == 0)
-            prepareRedirectResponse(route->location);
-        else if (endsWith(route->location, ".json")) {
-            std::string jsonContent = readJsonFile(route->location);
+    if (!route.location.empty() && !route.method.empty() && !route.path.empty()) {
+        if (route.location.find("http://") == 0 || route.location.find("https://") == 0)
+            prepareRedirectResponse(route.location);
+        else if (endsWith(route.location, ".json")) {
+            std::string jsonContent = readJsonFile(route.location);
             if (!jsonContent.empty()) {
                 prepareJsonResponse(jsonContent);
             } else {
@@ -282,8 +275,8 @@ void Api::handleRequest(int client_socket) {
                 return;
             }
         }
-        else if (endsWith(route->location, ".html")) {
-            std::string htmlContent = readHtmlFile(route->location);
+        else if (endsWith(route.location, ".html")) {
+            std::string htmlContent = readHtmlFile(route.location);
             if (!htmlContent.empty()) {
                 prepareHtmlResponse(htmlContent);
             } else {
@@ -292,13 +285,17 @@ void Api::handleRequest(int client_socket) {
                 return;
             }
         }
-        else if (route->path == "uploads") {
+        else if (route.path == "uploads") {
             handleFileUpload();
         }
         else{
-            std::cout << "Error no especificado " << route->path << std::endl;
+            std::cout << "Error no especificado " << route.path << std::endl;
         }
         sendResponse(client_socket);
+    }
+    else
+    {
+        sendError(500); // TODO Comprobar error
     }
 }
 

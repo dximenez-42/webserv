@@ -87,12 +87,12 @@ void	AConfig::parseServer(std::vector<std::string>& split, unsigned int line_num
 		server->setServerPort(std::atoi(split[1].c_str()));
 		if (server->getServerPort() <= 0)
 			return newError(line_number, "port must be greater than 0");
-		if (_servers.size() > 1)
+		if (_servers.size() > 1 && !server->getServerHost().empty())
 		{
 			for (size_t i = 0; i < _servers.size() - 1; i++)
 			{
-				if (_servers[i]->getServerPort() == server->getServerPort())
-					return newError(line_number, "port is duplicated on another server");
+				if (_servers[i]->getServerHost() == server->getServerHost() && _servers[i]->getServerPort() == server->getServerPort())
+					return newError(line_number, "host-port combination is duplicated on another server");
 			}
 		}
 	}
@@ -100,7 +100,20 @@ void	AConfig::parseServer(std::vector<std::string>& split, unsigned int line_num
 		return newError(line_number, "port already defined");
 	else if (split[0] == "host" && server->getServerHost().empty())
 	{
-		server->setServerHost(split[1]);
+		if (!::isValidIp(split[1]))
+			return newError(line_number, "invalid host");
+		if (split[1] == "localhost")
+			server->setServerHost("0.0.0.0");
+		else
+			server->setServerHost(split[1]);
+		if (_servers.size() > 1 && server->getServerPort() != 0)
+		{
+			for (size_t i = 0; i < _servers.size() - 1; i++)
+			{
+				if (_servers[i]->getServerHost() == server->getServerHost() && _servers[i]->getServerPort() == server->getServerPort())
+					return newError(line_number, "host-port combination is duplicated on another server");
+			}
+		}
 	}
 	else if (split[0] == "host" && !server->getServerHost().empty())
 		return newError(line_number, "host already defined");
@@ -483,6 +496,7 @@ void	AConfig::printServers()
 	for (size_t i = 0; i < _servers.size(); i++)
 	{
 		std::cout << "\033[1;32mServer #" << i + 1 << "\033[0m" << std::endl;
+		std::cout << "server_host:\t\t" << _servers[i]->getServerHost() << std::endl;
 		std::cout << "server_port:\t\t" << _servers[i]->getServerPort() << std::endl;
 		std::cout << "server_name:\t\t" << _servers[i]->getServerName() << std::endl;
 		std::cout << "server_index:\t\t" << _servers[i]->getServerIndex() << std::endl;

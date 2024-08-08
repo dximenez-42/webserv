@@ -36,7 +36,7 @@ class Api
 
         bool    createDirectory(const std::string&);
         void    handleFileUpload();
-        Route   *findRoute();
+        Route   findRoute();
 };
 
 
