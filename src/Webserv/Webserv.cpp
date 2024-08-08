@@ -83,6 +83,7 @@ void Webserv::runServers()
 					it = _client_sockets.erase(it);
 				} else {
 					_api.handleRequest(client_socket);
+					delete _request;
 					++it;
 				}
 			} else {
@@ -104,24 +105,45 @@ Server* Webserv::findServer(int client_socket) {
 
 
 
-int		Webserv::readRequest(int client_socket) {
-	std::vector<char> requestData;
-	char buffer[BUFFER_SIZE];
-	ssize_t valread;
-	bool requestComplete = false;
+int Webserv::readRequest(int client_socket) {
+    std::cout << "Se lee la request" << std::endl;
+    std::vector<char> requestData;
+    char buffer[BUFFER_SIZE];
+    ssize_t valread;
+    bool headersComplete = false;
+    size_t contentLength = 0;
 
-	while (!requestComplete && (valread = recv(client_socket, buffer, BUFFER_SIZE, 0)) > 0) {
-		requestData.insert(requestData.end(), buffer, buffer + valread);
+    while (!headersComplete && (valread = recv(client_socket, buffer, BUFFER_SIZE, 0)) > 0) {
+        requestData.insert(requestData.end(), buffer, buffer + valread);
+        std::string requestString(requestData.begin(), requestData.end());
+        size_t headersEnd = requestString.find("\r\n\r\n");
+        if (headersEnd != std::string::npos) {
+            headersComplete = true;
+            headersEnd += 4;
+            
+            size_t contentLengthPos = requestString.find("Content-Length: ");
+            if (contentLengthPos != std::string::npos) {
+                contentLengthPos += 16;
+                size_t contentLengthEnd = requestString.find("\r\n", contentLengthPos);
+                contentLength = stoi(requestString.substr(contentLengthPos, contentLengthEnd - contentLengthPos));
+            }
 
-		std::string requestString(requestData.begin(), requestData.end());
-		size_t headerEnd = requestString.find("\r\n\r\n");
-		if (headerEnd != std::string::npos)
-			break;
-		}
-	std::string requestString(requestData.begin(), requestData.end());
-	//std::cout << std::endl << "Request String " << requestString << std::endl << std::endl;
-	_request = new Request();
-	_request->fillRequest(requestString);
-	_api.setRequest(_request);
-	return (valread);
+            size_t bodySize = requestString.size() - headersEnd;
+            while (bodySize < contentLength) {
+                valread = recv(client_socket, buffer, BUFFER_SIZE, 0);
+                if (valread > 0) {
+                    requestData.insert(requestData.end(), buffer, buffer + valread);
+                    bodySize += valread;
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+    std::string requestString(requestData.begin(), requestData.end());
+    _request = new Request();
+    _request->fillRequest(requestString);
+    _api.setRequest(_request);
+    
+    return (valread);
 }
