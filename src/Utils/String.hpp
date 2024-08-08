@@ -130,6 +130,41 @@ T	joinPaths(const T& str1, const T& str2)
 	return str1 + "/" + str2;
 }
 
+template <typename T>
+bool	isValidIp(T str)
+{
+	int		num = -1;
+	int		dots = 0;
+
+	if (str.empty())
+		return false;
+	if (str == "localhost" || str == "0.0.0.0")
+		return true;
+
+	for (size_t i = 0; i < str.size(); i++)
+	{
+		if (str[i] >= '0' && str[i] <= '9')
+		{
+			if (num < 0)
+				num = str[i] - '0';
+			else
+				num = num * 10 + str[i] - '0';
+		}
+		else if (str[i] == '.')
+		{
+			if (num < 0 || num > 255)
+				return false;
+			num = -1;
+			dots++;
+		}
+		else
+			return false;
+	}
+	if (num < 0 || num > 255 || dots != 3)
+		return false;
+	return true;
+}
+
 
 template <typename T>
 std::string	itos(T number)
