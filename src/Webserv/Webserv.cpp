@@ -122,18 +122,8 @@ int		Webserv::readRequest(int client_socket) {
 
 		std::string requestString(requestData.begin(), requestData.end());
 		size_t headerEnd = requestString.find("\r\n\r\n");
-		if (headerEnd != std::string::npos) {
-			size_t contentLengthPos = requestString.find("Content-Length:");
-			if (contentLengthPos != std::string::npos) {
-				size_t contentLengthStart = contentLengthPos + 15;
-				size_t contentLengthEnd = requestString.find("\r\n", contentLengthStart);
-				std::string contentLengthStr = requestString.substr(contentLengthStart, contentLengthEnd - contentLengthStart);
-				int contentLength = ::stoi(contentLengthStr);
-
-				if (requestData.size() >= headerEnd + 4 + contentLength) {
-					requestComplete = true;
-				}
-			} else if (requestString.find("Transfer-Encoding: chunked") != std::string::npos) {
+		if (headerEnd != std::string::npos)
+			if (requestString.find("Transfer-Encoding: chunked") != std::string::npos) {
 				size_t pos = headerEnd + 4;
 				while (pos < requestData.size()) {
 					size_t chunkSizeEnd = requestString.find("\r\n", pos);
@@ -149,8 +139,8 @@ int		Webserv::readRequest(int client_socket) {
 				requestComplete = true;
 			}
 		}
-	}
 	std::string requestString(requestData.begin(), requestData.end());
+	//std::cout << std::endl << "Request String " << requestString << std::endl << std::endl;
 	_request = new Request();
 	_request->fillRequest(requestString);
 	_api.setRequest(_request);

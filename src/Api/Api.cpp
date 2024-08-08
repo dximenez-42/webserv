@@ -39,7 +39,6 @@ Route* Api::findRoute() {
     bool pathExists = false;
 
     for (std::vector<Route>::const_iterator it = routes.begin(); it != routes.end(); ++it) {
-        std::cout << it->path << "---" << path << std::endl;
         if (it->path == path) {
             if (it->method == method) {
                 return const_cast<Route*>(&(*it));
@@ -48,7 +47,6 @@ Route* Api::findRoute() {
         }
     }
     if (pathExists){
-        std::cout << "Method not allowed for " << path << std::endl;
         sendError(405);
     }
     else
@@ -74,7 +72,6 @@ std::string readJsonFile(const std::string& filepath) {
 }
 
 std::string readHtmlFile(const std::string& filepath) {
-    std::cout << filepath << std::endl;
 
     std::ifstream file(filepath.c_str(), std::ios::in);
     if (!file.is_open()) {
@@ -94,7 +91,6 @@ void Api::sendError(int errorCode)
         oss << _errorPath << "/" << errorCode << ".html";
         std::string filePath = oss.str();
 
-        std::cout << filePath<< std::endl;
 
         std::ifstream errorFile(filePath.c_str(), std::ios::in);
         if (!errorFile.is_open() || errorCode == 500) {
@@ -103,7 +99,6 @@ void Api::sendError(int errorCode)
                             "Content-Length: 5\r\n"
                             "\r\n"
                             "Error";
-            std::cout << _httpResponse << std::endl;
             sendResponse(_client_socket);
             return;
         }
@@ -234,7 +229,6 @@ void    Api::prepareRedirectResponse(const std::string& newLocation) {
         "Location: " + newLocation + "\r\n"
         "Content-Length: 0\r\n"
         "\r\n";
-    std::cout << _httpResponse << std::endl;
 }
 
 void    Api::prepareHtmlResponse(const std::string& htmlContent) {
@@ -244,7 +238,6 @@ void    Api::prepareHtmlResponse(const std::string& htmlContent) {
         "Content-Length: " + itos(htmlContent.length()) + "\r\n"
         "\r\n" +
         htmlContent;
-    std::cout << _httpResponse << std::endl;
 }
 
 void    Api::prepareJsonResponse(const std::string& jsonContent) {
@@ -254,7 +247,6 @@ void    Api::prepareJsonResponse(const std::string& jsonContent) {
         "Content-Length: " + itos(jsonContent.length()) + "\r\n"
         "\r\n" +
         jsonContent;
-    std::cout << _httpResponse << std::endl;
 }
 
 void    Api::sendResponse(int client_socket)
@@ -271,7 +263,6 @@ void Api::handleRequest(int client_socket) {
     if (checkMethod() == -1)
     {
         //GESTIONAR RESPUESTA PARA MÉTODO NO ACEPTADO
-        std::cout << "Método no aceptado" << std::endl;
         sendError(405);
         return;
     }
@@ -280,7 +271,6 @@ void Api::handleRequest(int client_socket) {
     Route *route = findRoute();
 
     if (route != NULL) {
-        std::cout << route->location << std::endl;
         if (route->location.find("http://") == 0 || route->location.find("https://") == 0)
             prepareRedirectResponse(route->location);
         else if (endsWith(route->location, ".json")) {
