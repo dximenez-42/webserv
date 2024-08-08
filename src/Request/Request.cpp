@@ -1,15 +1,45 @@
 #include "Request.hpp"
 
-Request::Request(std::string str)
+Request::Request()
 {
-	// std::cout << "Request: \n" << str << std::endl << std::endl;
+	_method = "";
+	_uri = "";
+	_http_version = "";
+	_content_type = "";
+	_content_boundary = "";
+	_content_length = "";
+	_body = "";
 
+	in_form = false;
+	in_body = false;
+	empty_line = false;
+};
+
+Request::Request(const Request& src)
+{
+	*this = src;
+}
+
+Request& Request::operator=(const Request& rhs)
+{
+	if (this != &rhs)
+	{
+		*this = rhs;
+	}
+	return *this;
+}
+
+Request::~Request()
+{
+	_form.clear();
+}
+
+#include <stdio.h>
+
+void	Request::fillRequest(std::string str) {
+	std::cout << std::endl << "Request: \n" << str << std::endl << std::endl;
 
 	std::vector<std::string>	lines = ::splitChar(str, '\n');
-	FormField					form;
-	bool						in_form = false;
-	bool						in_body = false;
-	bool						empty_line = false;
 
 	for (size_t i = 0; i < lines.size(); i++)
 	{
@@ -22,6 +52,7 @@ Request::Request(std::string str)
 		{
 			_method = words[0];
 			_uri = words[1];
+			_normalizedUri = ::normalizePath(words[1]);
 			_http_version = words[2];
 		}
 		else if (words[0] == "Content-Type:")
@@ -109,34 +140,26 @@ Request::Request(std::string str)
 	lines.clear();
 }
 
-Request::Request(const Request& src)
-{
-	*this = src;
+std::string Request::getBoundary() const {
+    return _content_boundary;
 }
 
-Request& Request::operator=(const Request& rhs)
-{
-	if (this != &rhs)
-	{
-		*this = rhs;
-	}
-	return *this;
+std::string Request::getHeaderValue(const std::string& key) const {
+    if (key == "Content-Type") {
+        return _content_type;
+    } else if (key == "Content-Length") {
+        return _content_length;
+    }
+    return "";
 }
-
-Request::~Request()
-{
-	_form.clear();
-}
-
-#include <stdio.h>
 
 void	Request::printRequest()
 {
-	std::cout << "Method: " << _method << std::endl;
+	std::cout << std::endl << std::endl << "Method: " << _method << std::endl;
 	std::cout << "URI: " << _uri << std::endl;
 	std::cout << "HTTP Version: " << _http_version << std::endl;
 	std::cout << "Content-Type: " << _content_type << std::endl;
-	std::cout << "Content-Length: " << _content_length << std::endl;
+	std::cout << "Content-Length: " << _content_length << std::endl << std::endl;
 
 	if (!_form.empty())
 	{
@@ -147,11 +170,46 @@ void	Request::printRequest()
 						<< _form[i].value << std::endl;
 		}
 	}
-	
-	if (!_body.empty())
-	{
-		std::cout << "Body:" << std::endl << _body << std::endl;
-	}
+	std::cout << std::endl << std::endl << std::endl;
 
-	std::cout << std::endl;
 }
+
+std::string				Request::getMethod() const 
+{
+	return _method;
+};
+
+std::string				Request::getUri() const
+{
+	return _uri;
+};
+
+std::string				Request::getNormalizedUri() const
+{
+	return _normalizedUri;
+};
+
+std::string				Request::getHttpVersion() const
+{
+	return _http_version;
+};
+
+std::string				Request::getContentType() const
+{
+	return _content_type;
+};
+
+std::string				Request::getContentLength() const
+{
+	return _content_length;
+};
+
+std::vector<FormField>	Request::getForm() const
+{
+	return _form;
+};
+
+std::string				Request::getBody() const
+{
+	return _body;
+};

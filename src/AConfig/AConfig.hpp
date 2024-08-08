@@ -6,7 +6,9 @@
 #include <fstream>
 #include <vector>
 #include "../../includes.hpp"
-#include "../Server/Server.hpp"
+#include "../Request/Request.hpp"
+
+class Server;
 
 class AConfig
 {
@@ -39,10 +41,10 @@ class AConfig
 		void	newError(unsigned int line_number, std::string error);
 
 	protected:
-		std::string	_configFile;
+		std::string				_configFile;
 
-		std::string	_access_log;
-		std::string	_error_log;
+		std::string				_access_log;
+		std::string				_error_log;
 
 		std::vector<Server*>	_servers;
 
