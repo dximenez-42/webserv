@@ -172,39 +172,6 @@ bool Server::hasClientSocket(int client_socket) const {
 }
 
 
-void Server::handleConnections() {
-	// Verificar si hay conexiones entrantes
-	if (FD_ISSET(_server_fd, &_read_fds)) {
-		int new_socket = ::accept(_server_fd, NULL, NULL);
-		if (new_socket < 0) {
-			std::cerr << "Error en accept" << std::endl;
-			exit(EXIT_FAILURE);
-		}
-		_client_sockets.push_back(new_socket);
-		std::cout << "Nueva conexión aceptada" << std::endl;
-	}
-
-	// Verificar actividad en clientes existentes
-	for (size_t i = 0; i < _client_sockets.size(); ++i) {
-		if (FD_ISSET(_client_sockets[i], &_read_fds)) {
-			char buffer[1024] = {0};
-			int valread = ::read(_client_sockets[i], buffer, 1024);
-			if (valread == 0) {
-				// Cliente desconectado
-				close(_client_sockets[i]);
-				_client_sockets.erase(_client_sockets.begin() + i);
-				--i; // Ajustar índice tras eliminar
-				std::cout << "Cliente desconectado" << std::endl;
-			} else {
-				// Responder al cliente
-				std::cout << "Mensaje recibido: " << buffer << std::endl;
-				::send(_client_sockets[i], "Hello, Client!", 14, 0);
-			}
-		}
-	}
-}
-
-
 int Server::setUp() 
 {
     _server_fd = socket(AF_INET, SOCK_STREAM, 0);

@@ -62,7 +62,6 @@ class Server
 		void	pushClientSocket(int);
 		bool	hasClientSocket(int) const;
 
-		void	handleConnections();
 		int		setUp();
 		int		listen();
 		int		accept();

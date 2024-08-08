@@ -3,17 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   ft_is_int.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: carlosga <carlosga@student.42.fr>          +#+  +:+       +#+        */
+/*   By: user4t <user4t@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 11:49:29 by carlosga          #+#    #+#             */
-/*   Updated: 2023/09/26 13:08:51 by carlosga         ###   ########.fr       */
+/*   Updated: 2024/08/08 19:00:34 by user4t           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/libft.h"
-//Si retorna -1, se pasa de longitud, 
-//0 tiene longitud menor que la del MAX_INT, 
-//1 esta en el limite
 
 int	on_limit(char *str)
 {

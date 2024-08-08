@@ -152,9 +152,9 @@ void Api::handleFileUpload() {
         return;
     }
 
-    std::string contentType = _request->getHeaderValue("Content-Type");
+    std::string contentType = _request->getContentType();
     if (contentType.find("multipart/form-data") == std::string::npos) {
-        sendError(415); // Unsupported Media Type
+        sendError(415);
         return;
     }
 
@@ -172,7 +172,7 @@ void Api::handleFileUpload() {
         if (headerEnd == std::string::npos) break;
 
         std::string headers = body.substr(pos, headerEnd - pos);
-        pos = headerEnd + 4;  // Skip CRLFCRLF
+        pos = headerEnd + 4;
 
         std::string::size_type fileEnd = body.find(boundaryDelimiter, pos);
         if (fileEnd == std::string::npos) {
@@ -262,7 +262,6 @@ void Api::handleRequest(int client_socket) {
     _client_socket = client_socket;
     if (checkMethod() == -1)
     {
-        //GESTIONAR RESPUESTA PARA MÉTODO NO ACEPTADO
         sendError(405);
         return;
     }
