@@ -30,6 +30,32 @@ void    Api::setServer(Server *server)
 }
 
 
+
+
+Route* Api::findRoute() {
+    std::vector<Route> routes = _server->getRoutes();
+    std::string path = _request->getNormalizedUri();
+    std::string method = _request->getMethod();
+    bool pathExists = false;
+
+    for (std::vector<Route>::const_iterator it = routes.begin(); it != routes.end(); ++it) {
+        std::cout << it->path << "---" << path << std::endl;
+        if (it->path == path) {
+            if (it->method == method) {
+                return const_cast<Route*>(&(*it));
+            }
+            pathExists = true; 
+        }
+    }
+    if (pathExists){
+        std::cout << "Method not allowed for " << path << std::endl;
+        sendError(405);
+    }
+    else
+        sendError(404);
+    return NULL;
+}
+
 bool endsWith(const std::string& str, const std::string& suffix) {
     if (str.size() < suffix.size()) {
         return false;
@@ -59,6 +85,9 @@ std::string readHtmlFile(const std::string& filepath) {
     return content;
 }
 
+
+
+
 void Api::sendError(int errorCode)
 {
     std::ostringstream oss;
@@ -68,7 +97,7 @@ void Api::sendError(int errorCode)
         std::cout << filePath<< std::endl;
 
         std::ifstream errorFile(filePath.c_str(), std::ios::in);
-        if (!errorFile.is_open()) {
+        if (!errorFile.is_open() || errorCode == 500) {
             _httpResponse = "HTTP/1.1 500 Internal Server Error\r\n"
                             "Content-Type: text/plain\r\n"
                             "Content-Length: 5\r\n"
@@ -108,6 +137,95 @@ int  Api::checkMethod()
     }
     return -1;
 }
+
+bool Api::createDirectory(const std::string& path) {
+    struct stat st = {0};
+
+    if (stat(path.c_str(), &st) == -1) {
+        if (mkdir(path.c_str(), 0700) != 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+void Api::handleFileUpload() {
+    _request->printRequest();
+    if (_request == NULL) {
+        sendError(400);
+        return;
+    }
+
+    std::string contentType = _request->getHeaderValue("Content-Type");
+    if (contentType.find("multipart/form-data") == std::string::npos) {
+        sendError(415); // Unsupported Media Type
+        return;
+    }
+
+    std::string boundary = "--" + _request->getBoundary();
+    std::string body = _request->getBody();
+    std::string::size_type pos = 0;
+
+    std::string boundaryDelimiter = boundary + "\r\n";
+    std::string boundaryEnd = boundary + "--\r\n";
+
+    while ((pos = body.find(boundaryDelimiter, pos)) != std::string::npos) {
+        pos += boundaryDelimiter.length();
+
+        std::string::size_type headerEnd = body.find("\r\n\r\n", pos);
+        if (headerEnd == std::string::npos) break;
+
+        std::string headers = body.substr(pos, headerEnd - pos);
+        pos = headerEnd + 4;  // Skip CRLFCRLF
+
+        std::string::size_type fileEnd = body.find(boundaryDelimiter, pos);
+        if (fileEnd == std::string::npos) {
+            fileEnd = body.find(boundaryEnd, pos);
+        }
+        if (fileEnd == std::string::npos) break;
+
+        std::string fileData = body.substr(pos, fileEnd - pos);
+        pos = fileEnd + boundaryDelimiter.length();
+
+        std::string fileName;
+        std::string line;
+        std::istringstream headerStream(headers);
+        while (std::getline(headerStream, line)) {
+            if (line.find("Content-Disposition:") != std::string::npos && line.find("filename=\"") != std::string::npos) {
+                std::string::size_type startPos = line.find("filename=\"") + 10;
+                std::string::size_type endPos = line.find("\"", startPos);
+                fileName = line.substr(startPos, endPos - startPos);
+                break;
+            }
+        }
+
+        if (!fileName.empty()) {
+            if (!createDirectory("uploads")) {
+                sendError(500);
+                return;
+            }
+
+            std::ofstream outFile(("uploads/" + fileName).c_str(), std::ios::binary);
+            if (!outFile) {
+                sendError(500);
+                return;
+            }
+            outFile.write(fileData.c_str(), fileData.size());
+            outFile.close();
+
+            _httpResponse = "HTTP/1.1 200 OK\r\n"
+                            "Content-Type: text/plain\r\n"
+                            "Content-Length: 22\r\n"
+                            "\r\n"
+                            "File uploaded successfully";
+            sendResponse(_client_socket);
+        }
+    }
+}
+
+
+
 
 
 void    Api::prepareRedirectResponse(const std::string& newLocation) {
@@ -159,48 +277,39 @@ void Api::handleRequest(int client_socket) {
     }
     std::vector<Route> routes = _server->getRoutes();
 
-    for (std::vector<Route>::iterator it = routes.begin(); it != routes.end(); ) {
-        if (_request->getNormalizedUri() != it->path) {
-            std::cout << _request->getNormalizedUri() << "---" << it->path << std::endl;
-            it = routes.erase(it);
-        } else {
-            std::cout << it->path << "Not deleted" << std::endl;
-            ++it;
+    Route *route = findRoute();
+
+    if (route != NULL) {
+        std::cout << route->location << std::endl;
+        if (route->location.find("http://") == 0 || route->location.find("https://") == 0)
+            prepareRedirectResponse(route->location);
+        else if (endsWith(route->location, ".json")) {
+            std::string jsonContent = readJsonFile(route->location);
+            if (!jsonContent.empty()) {
+                prepareJsonResponse(jsonContent);
+            } else {
+                std::cerr << "Error: File not found or empty" << std::endl;
+                sendError(404);
+                return;
+            }
         }
-    }
-
-    if (routes.empty())
-    {
-        std::cout << "Ruta no encontrada" << std::endl;
-        sendError(404);
-        return;
-    }
-
-    for (std::vector<Route>::iterator it = routes.begin(); it != routes.end(); it++) {
-        if (_request->getMethod() == it->method) {
-            if (it->location.find("http://") == 0 || it->location.find("https://") == 0)
-                prepareRedirectResponse(it->location);
-            else if (endsWith(it->location, ".json")) {
-                std::string jsonContent = readJsonFile(it->location);
-                if (!jsonContent.empty()) {
-                    prepareJsonResponse(jsonContent);
-                } else {
-                    std::cerr << "Error: File not found or empty" << std::endl;
-                }
+        else if (endsWith(route->location, ".html")) {
+            std::string htmlContent = readHtmlFile(route->location);
+            if (!htmlContent.empty()) {
+                prepareHtmlResponse(htmlContent);
+            } else {
+                std::cerr << "Error: File not found or empty" << std::endl;
+                sendError(404);
+                return;
             }
-            else if (endsWith(it->location, ".html")) {
-                std::string htmlContent = readHtmlFile(it->location);
-                if (!htmlContent.empty()) {
-                    prepareHtmlResponse(htmlContent);
-                } else {
-                    std::cerr << "Error: File not found or empty" << std::endl;
-                }
-            }
+        }
+        else if (route->path == "uploads") {
+            handleFileUpload();
         }
         else{
-            std::cout << "Method not accepted for: " << it->path << std::endl;
+            std::cout << "Error no especificado " << route->path << std::endl;
         }
+        sendResponse(client_socket);
     }
-    sendResponse(client_socket);
 }
 

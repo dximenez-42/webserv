@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <string>
 
+#include <sys/stat.h>
 #include <fstream>
 #include <sstream>
 

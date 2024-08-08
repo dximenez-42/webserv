@@ -37,7 +37,7 @@ Request::~Request()
 #include <stdio.h>
 
 void	Request::fillRequest(std::string str) {
-	// std::cout << "Request: \n" << str << std::endl << std::endl;
+	std::cout << std::endl << "Request: \n" << str << std::endl << std::endl;
 
 	std::vector<std::string>	lines = ::splitChar(str, '\n');
 
@@ -140,9 +140,22 @@ void	Request::fillRequest(std::string str) {
 	lines.clear();
 }
 
+std::string Request::getBoundary() const {
+    return _content_boundary;
+}
+
+std::string Request::getHeaderValue(const std::string& key) const {
+    if (key == "Content-Type") {
+        return _content_type;
+    } else if (key == "Content-Length") {
+        return _content_length;
+    }
+    return "";
+}
+
 void	Request::printRequest()
 {
-	std::cout << std::endl << "Method: " << _method << std::endl;
+	std::cout << std::endl << std::endl << "Method: " << _method << std::endl;
 	std::cout << "URI: " << _uri << std::endl;
 	std::cout << "HTTP Version: " << _http_version << std::endl;
 	std::cout << "Content-Type: " << _content_type << std::endl;
@@ -157,6 +170,8 @@ void	Request::printRequest()
 						<< _form[i].value << std::endl;
 		}
 	}
+	std::cout << std::endl << std::endl << std::endl;
+
 }
 
 std::string				Request::getMethod() const 
@@ -192,4 +207,9 @@ std::string				Request::getContentLength() const
 std::vector<FormField>	Request::getForm() const
 {
 	return _form;
+};
+
+std::string				Request::getBody() const
+{
+	return _body;
 };

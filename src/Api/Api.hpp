@@ -34,6 +34,9 @@ class Api
         void prepareJsonResponse(const std::string& jsonContent);
         void sendResponse(int client_socket);
 
+        bool    createDirectory(const std::string&);
+        void    handleFileUpload();
+        Route   *findRoute();
 };
 
 
