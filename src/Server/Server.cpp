@@ -214,7 +214,7 @@ int Server::setUp()
     }
 
     _address.sin_family = AF_INET;
-    _address.sin_addr.s_addr = INADDR_ANY;
+    _address.sin_addr.s_addr = inet_addr(_server_host.c_str());
     _address.sin_port = htons(_server_port);
 
     if (bind(_server_fd, (struct sockaddr*)&_address, sizeof(_address)) < 0) {
