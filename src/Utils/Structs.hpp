@@ -20,6 +20,7 @@ struct FormField
 {
 	std::string	key;
 	std::string	value;
+	std::string	filename;
 };
 
 

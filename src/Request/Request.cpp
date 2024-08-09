@@ -37,13 +37,13 @@ Request::~Request()
 #include <stdio.h>
 
 void	Request::fillRequest(std::string str) {
-	std::cout << std::endl << "Request: \n" << str << std::endl << std::endl;
+	// std::cout << std::endl << "Request: \n" << str << std::endl << std::endl;
 
-	std::vector<std::string>	lines = ::splitChar(str, '\n');
+	std::vector<std::string>	lines = splitChar(str, '\n');
 
 	for (size_t i = 0; i < lines.size(); i++)
 	{
-		std::vector<std::string> words = ::splitSpaces(lines[i]);
+		std::vector<std::string> words = splitSpaces(lines[i]);
 		
 		if (words.empty())
 			continue;
@@ -52,15 +52,15 @@ void	Request::fillRequest(std::string str) {
 		{
 			_method = words[0];
 			_uri = words[1];
-			_normalizedUri = ::normalizePath(words[1]);
+			_normalizedUri = normalizePath(words[1]);
 			_http_version = words[2];
 		}
-		else if (words[0] == "Content-Type:")
+		else if (words[0] == "Content-Type:" && _content_type.empty())
 		{
 			_content_type = words[1];
 			if (_content_type == "multipart/form-data;")
 			{
-				_content_boundary = ::getPairValue(words[2]);
+				_content_boundary = getPairValue(words[2]);
 			}
 			else if (_content_type == "application/x-www-form-urlencoded")
 			{
@@ -77,11 +77,15 @@ void	Request::fillRequest(std::string str) {
 		}
 		else if (words[0] == "Content-Disposition:" && words[1] == "form-data;" && _content_type == "multipart/form-data;")
 		{
-			form.key = ::getPairValue(words[2]);
+			form.key = removeQuotes(getPairValue(words[2]));
+			if (words.size() > 3)
+				form.filename = removeQuotes(getPairValue(words[3]));
 			in_form = true;
 		}
 		else if (in_form && _content_type == "multipart/form-data;" && !_content_length.empty())
 		{
+			if (words[0] == "Content-Type:")
+				continue;
 			if (lines[i].empty() && !empty_line)
 			{
 				empty_line = true;
@@ -109,12 +113,12 @@ void	Request::fillRequest(std::string str) {
 				empty_line = true;
 				continue;
 			}
-			std::vector<std::string>	form_data = ::splitChar(lines[i], '&');
+			std::vector<std::string>	form_data = splitChar(lines[i], '&');
 
 			for (size_t i = 0; i < form_data.size(); i++)
 			{
-				form.key = ::getPairKey(form_data[i]);
-				form.value = ::getPairValue(form_data[i]);
+				form.key = getPairKey(form_data[i]);
+				form.value = getPairValue(form_data[i]);
 				_form.push_back(form);
 				form.key.clear();
 				form.value.clear();
@@ -166,8 +170,9 @@ void	Request::printRequest()
 		std::cout << "Form:" << std::endl;
 		for (size_t i = 0; i < _form.size(); i++)
 		{
-			std::cout	<< _form[i].key << "="
-						<< _form[i].value << std::endl;
+			std::cout << "\tKey: " << _form[i].key << std::endl;
+			std::cout << "\tValue: " << _form[i].value << std::endl;
+			std::cout << "\tFilename: " << _form[i].filename << std::endl;
 		}
 	}
 	std::cout << std::endl << std::endl << std::endl;

@@ -243,4 +243,26 @@ T	getPairValue(T str)
 	return value;
 }
 
+template <typename T>
+T	removeQuotes(T str)
+{
+	bool		first = false;
+	size_t		j = 0;
+	std::string	res;
+
+	for (size_t i = 0; i < str.size(); i++)
+	{
+		if (str[i] == '\"' && !first)
+			first = true;
+		else if (str[i] == '\"' && first)
+		{
+			return res;
+		}
+		else if (first)
+			res += str[i];
+	}
+	
+	return res;
+}
+
 #endif
