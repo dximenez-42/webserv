@@ -24,7 +24,7 @@ class Server
 		int							_server_fd;
 		int							_server_socket;
 	    struct sockaddr_in 			_address;
-		fd_set 						_read_fds;
+		// fd_set 						_read_fds;		// TODO remove
 		std::vector<int> 			_client_sockets;
 
 	public:

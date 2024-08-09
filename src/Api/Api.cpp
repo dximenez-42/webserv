@@ -1,6 +1,8 @@
 #include "Api.hpp"
 
-Api::Api() {}
+Api::Api() {
+    _errorPath = "www/errors";      //TODO Cambiar a la ruta del config
+}
 
 Api::~Api() {}
 
@@ -127,7 +129,7 @@ int  Api::checkMethod()
 }
 
 bool Api::createDirectory(const std::string& path) {
-    struct stat st = {0};
+    struct stat st = { .st_dev = 0 };
 
     if (stat(path.c_str(), &st) == -1) {
         if (mkdir(path.c_str(), 0700) != 0) {

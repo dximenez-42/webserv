@@ -75,7 +75,7 @@ void Webserv::runServers()
 		for (std::vector<int>::iterator it = _client_sockets.begin(); it != _client_sockets.end();) {
     		int client_socket = *it;
 			if (FD_ISSET(client_socket, &readfds)) {
-				char buffer[BUFFER_SIZE] = {0};
+				// char buffer[BUFFER_SIZE] = {0};		// TODO remove
 				ssize_t valread = readRequest(client_socket);
 				if (valread == 0) {
 					close(client_socket);

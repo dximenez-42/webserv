@@ -247,7 +247,6 @@ template <typename T>
 T	removeQuotes(T str)
 {
 	bool		first = false;
-	size_t		j = 0;
 	std::string	res;
 
 	for (size_t i = 0; i < str.size(); i++)
