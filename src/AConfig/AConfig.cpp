@@ -157,7 +157,7 @@ void	AConfig::parseServer(std::vector<std::string>& split, unsigned int line_num
 		}
 		if (!::isValidPath(::joinPaths<std::string>(_servers.back()->getServerRoot(), split[1])))
 			return newError(line_number, "invalid public path");
-		server->setServerPublic(::joinPaths<std::string>(_servers.back()->getServerRoot(), ::normalizePath(split[1])));
+		server->setServerPublic(::joinPaths<std::string>(_servers.back()->getServerRoot(), normalizePath(split[1])));
 	}
 	else if (split[0] == "public" && !server->getServerPublic().empty())
 		return newError(line_number, "public already defined");
@@ -192,7 +192,7 @@ void	AConfig::parseErrors(std::vector<std::string>& split, unsigned int line_num
 		return newError(line_number, "invalid error path");
 	ErrorPage	error;
 	error.code = split[0];
-	error.path = ::joinPaths<std::string>(_servers.back()->getServerRoot(), ::normalizePath(split[1]));
+	error.path = joinPaths<std::string>(_servers.back()->getServerRoot(), normalizePath(split[1]));
 
 	if (checkErrorExists(error))
 		return newError(line_number, "error code " + error.code + " already defined");
@@ -240,11 +240,11 @@ void	AConfig::parseRoutes(std::vector<std::string>& split, unsigned int line_num
 		return newError(line_number, "invalid route location");
 	Route	route;
 	route.method = split[0];
-	route.path = ::normalizePath(split[1]);
+	route.path = normalizePath(split[1]);
 	if (::isHttpRoute(split[2]))
 		route.location = split[2];
 	else
-		route.location = ::joinPaths(_servers.back()->getServerRoot(), ::normalizePath(split[2]));
+		route.location = joinPaths(_servers.back()->getServerRoot(), normalizePath(split[2]));
 	if (checkRouteExists(route))
 		return newError(line_number, "route \"" + route.path + "\" with method " + route.method + " already defined");
 	_servers.back()->addRoute(route);
@@ -252,7 +252,7 @@ void	AConfig::parseRoutes(std::vector<std::string>& split, unsigned int line_num
 
 void	AConfig::parseLine(std::string line, unsigned int line_number)
 {
-	std::vector<std::string>	split = ::splitSpaces(line);
+	std::vector<std::string>	split = splitSpaces(line);
 	static bool	http_block = false;
 	static bool	server_block = false;
 	static bool	errors_block = false;
@@ -381,7 +381,7 @@ void	AConfig::parseConfig()
 	while (std::getline(_input, line))
 	{
 		++line_number;
-		if (line.empty() || ::onlySpaces(line))
+		if (line.empty() || onlySpaces(line))
 			continue;
 		parseLine(line, line_number);
 	}
@@ -480,7 +480,7 @@ bool	AConfig::checkRouteExists(Route& route)
 
 void	AConfig::newError(unsigned int line_number, std::string error)
 {
-	_parse_errors.push_back("\033[1;37m" + _configFile + ":" + ::itos(line_number) + "\033[0m: \033[1;31merror:\033[0m " + error);
+	_parse_errors.push_back("\033[1;37m" + _configFile + ":" + itos(line_number) + "\033[0m: \033[1;31merror:\033[0m " + error);
 }
 
 std::vector<Server*>	AConfig::getServers() const

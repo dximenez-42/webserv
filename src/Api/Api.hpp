@@ -12,7 +12,7 @@ class Api
         Request         *_request;
         Server          *_server;
         std::string     _httpResponse;
-        std::string     _errorPath = "www/errors";
+        std::string     _errorPath;
         int             _client_socket;
     public:
         Api();

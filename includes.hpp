@@ -28,6 +28,5 @@
 #include "src/Api/Api.hpp"
 #include "src/Utils/Structs.hpp"
 
-#include "./libft/include/libft.h"
 #include "./colors.hpp"
 #endif

@@ -1,6 +1,8 @@
 #include "Api.hpp"
 
-Api::Api() {}
+Api::Api() {
+    _errorPath = "www/errors";      //TODO Cambiar a la ruta del config
+}
 
 Api::~Api() {}
 
@@ -127,7 +129,7 @@ int  Api::checkMethod()
 }
 
 bool Api::createDirectory(const std::string& path) {
-    struct stat st = {0};
+    struct stat st = { .st_dev = 0 };
 
     if (stat(path.c_str(), &st) == -1) {
         if (mkdir(path.c_str(), 0700) != 0) {
@@ -145,71 +147,12 @@ void Api::handleFileUpload() {
         return;
     }
 
-    std::string contentType = _request->getHeaderValue("Content-Type");
+    std::string contentType = _request->getContentType();
     if (contentType.find("multipart/form-data") == std::string::npos) {
-        sendError(415); // Unsupported Media Type
+        sendError(415);
         return;
     }
-
-    std::string boundary = "--" + _request->getBoundary();
-    std::string body = _request->getBody();
-    std::string::size_type pos = 0;
-
-    std::string boundaryDelimiter = boundary + "\r\n";
-    std::string boundaryEnd = boundary + "--\r\n";
-
-    while ((pos = body.find(boundaryDelimiter, pos)) != std::string::npos) {
-        pos += boundaryDelimiter.length();
-
-        std::string::size_type headerEnd = body.find("\r\n\r\n", pos);
-        if (headerEnd == std::string::npos) break;
-
-        std::string headers = body.substr(pos, headerEnd - pos);
-        pos = headerEnd + 4;  // Skip CRLFCRLF
-
-        std::string::size_type fileEnd = body.find(boundaryDelimiter, pos);
-        if (fileEnd == std::string::npos) {
-            fileEnd = body.find(boundaryEnd, pos);
-        }
-        if (fileEnd == std::string::npos) break;
-
-        std::string fileData = body.substr(pos, fileEnd - pos);
-        pos = fileEnd + boundaryDelimiter.length();
-
-        std::string fileName;
-        std::string line;
-        std::istringstream headerStream(headers);
-        while (std::getline(headerStream, line)) {
-            if (line.find("Content-Disposition:") != std::string::npos && line.find("filename=\"") != std::string::npos) {
-                std::string::size_type startPos = line.find("filename=\"") + 10;
-                std::string::size_type endPos = line.find("\"", startPos);
-                fileName = line.substr(startPos, endPos - startPos);
-                break;
-            }
-        }
-
-        if (!fileName.empty()) {
-            if (!createDirectory("uploads")) {
-                sendError(500);
-                return;
-            }
-
-            std::ofstream outFile(("uploads/" + fileName).c_str(), std::ios::binary);
-            if (!outFile) {
-                sendError(500);
-                return;
-            }
-            outFile.write(fileData.c_str(), fileData.size());
-            outFile.close();
-
-            _httpResponse = "HTTP/1.1 200 OK\r\n"
-                            "Content-Type: text/plain\r\n"
-                            "Content-Length: 22\r\n"
-                            "\r\n"
-                            "File uploaded successfully";
-            sendResponse(_client_socket);
-        }
-    }
+    //HANDLE UPLOADED FILE
 }
 
 
@@ -255,7 +198,6 @@ void Api::handleRequest(int client_socket) {
     _client_socket = client_socket;
     if (checkMethod() == -1)
     {
-        //GESTIONAR RESPUESTA PARA MÉTODO NO ACEPTADO
         sendError(405);
         return;
     }
