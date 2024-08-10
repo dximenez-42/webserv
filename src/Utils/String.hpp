@@ -185,33 +185,21 @@ bool	isValidIp(T str)
 template <typename T>
 bool	isValidFilename(T str)
 {
-	if (str.empty())
-		return false;
+	bool	has_text = false;
+	size_t	max = str.size();
 
-	bool	before = false;
-	bool	dot = false;
-	bool	after = false;
+	std::cout << "str: " << str << std::endl;
+	std::cout << "max: " << max << std::endl;
 
-	for (size_t i = 0; i < str.size(); i++)
+	for (size_t i = max - 1; i > 0; i--)
 	{
-		if (!dot && ((str[i] >= 'a' && str[i] <= 'z') || (str[i] >= 'A' && str[i] <= 'Z') || (str[i] >= '0' && str[i] <= '9') || str[i] == '_' || str[i] == '-'))
-		{
-			before = true;
-		}
-		else if (before && !dot && str[i] == '.')
-		{
-			dot = true;
-		}
-		else if (before && dot && ((str[i] >= 'a' && str[i] <= 'z') || (str[i] >= 'A' && str[i] <= 'Z')))
-		{
-			after = true;
-		}
-		else
+		std::cout << str[i] << std::endl;
+		if (str[i] == '.' && has_text)
+			return true;
+		else if (str[i] == '.' && !has_text)
 			return false;
-	}
-	if (before && dot && after)
-	{
-		return true;
+		else
+			has_text = true;
 	}
 	return false;
 }
