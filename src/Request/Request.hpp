@@ -33,6 +33,7 @@ class Request {
 		void printRequest();
 		void fillRequest(std::string str);
 		std::string getMethod() const;
+		std::string getBasename() const;
 		std::string getNormalizedUri() const;
 		std::string getHttpVersion() const;
 		std::string getContentType() const;

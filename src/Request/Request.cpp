@@ -188,6 +188,11 @@ std::string				Request::getMethod() const
 	return _method;
 };
 
+std::string		Request::getBasename() const
+{
+	return _basename;
+};
+
 std::string				Request::getNormalizedUri() const
 {
 	return _normalizedUri;

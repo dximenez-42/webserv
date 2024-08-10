@@ -227,10 +227,36 @@ void Api::handleFileUpload() {
     sendResponse(_client_socket);
 }
 
+std::string getMimeType(const std::string& path) {
+    std::map<std::string, std::string> mimeTypes;
+    mimeTypes[".html"] = "text/html";
+    mimeTypes[".htm"] = "text/html";
+    mimeTypes[".css"] = "text/css";
+    mimeTypes[".js"] = "application/javascript";
+    mimeTypes[".json"] = "application/json";
+    mimeTypes[".png"] = "image/png";
+    mimeTypes[".jpg"] = "image/jpeg";
+    mimeTypes[".jpeg"] = "image/jpeg";
+    mimeTypes[".gif"] = "image/gif";
+    mimeTypes[".svg"] = "image/svg+xml";
+    mimeTypes[".txt"] = "text/plain";
+
+    std::string::size_type idx = path.find_last_of('.');
+    if (idx != std::string::npos) {
+        std::string extension = path.substr(idx);
+        if (mimeTypes.find(extension) != mimeTypes.end()) {
+            return mimeTypes[extension];
+        }
+    }
+
+    return "application/octet-stream";
+}
+
 void Api::handleFileDownload() {
-    std::string filePath = "www" + _request->getUri();
+    std::string filePath = "www/" + _request->getNormalizedUri() + "/" + _request->getBasename();
     std::ifstream inFile(filePath.c_str(), std::ios::binary);
 
+    std::cout << "File Path: " << filePath << std::endl;
     if (!inFile) {
         sendError(404);
         return;
@@ -240,8 +266,10 @@ void Api::handleFileDownload() {
     oss << inFile.rdbuf();
     std::string fileContent = oss.str();
 
+    std::string mimeType = getMimeType(filePath);
+
     _httpResponse = "HTTP/1.1 200 OK\r\n"
-                    "Content-Type: application/octet-stream\r\n"
+                    "Content-Type: " + mimeType + "\r\n"
                     "Content-Length: " + itos(fileContent.size()) + "\r\n"
                     "\r\n" +
                     fileContent;
@@ -250,24 +278,19 @@ void Api::handleFileDownload() {
 }
 
 void Api::handleFileDelete() {
-    std::string filePath = "www" + _request->getUri();
+    std::string filePath = "www/" + _request->getNormalizedUri() + "/" + _request->getBasename();
 
     if (unlink(filePath.c_str()) != 0) {
         sendError(404);
     } else {
         _httpResponse = "HTTP/1.1 200 OK\r\n"
                         "Content-Type: text/plain\r\n"
-                        "Content-Length: 21\r\n"
+                        "Content-Length: 25\r\n"
                         "\r\n"
                         "File deleted successfully";
         sendResponse(_client_socket);
     }
 }
-
-
-
-
-
 
 void    Api::prepareRedirectResponse(const std::string& newLocation) {
     _httpResponse =
@@ -305,6 +328,7 @@ void    Api::sendResponse(int client_socket)
 }
 
 void Api::handleRequest(int client_socket) {
+    _request->printRequest();
     _client_socket = client_socket;
     if (checkMethod() == -1)
     {
