@@ -139,21 +139,131 @@ bool Api::createDirectory(const std::string& path) {
     return true;
 }
 
+std::string Api::generateUniqueFilename(const std::string& path, const std::string& filename) {
+    std::string uniqueFilename = filename;
+    std::string filePath = path + "/" + uniqueFilename;
+    std::ifstream file(filePath.c_str());
+
+    int counter = 1;
+    while (file.good()) {
+        std::ostringstream oss;
+        size_t dotPos = filename.find_last_of('.');
+        if (dotPos != std::string::npos) {
+            oss << filename.substr(0, dotPos) << "(" << counter << ")" << filename.substr(dotPos);
+        } else {
+            oss << filename << "(" << counter << ")";
+        }
+        uniqueFilename = oss.str();
+        filePath = path + "/" + uniqueFilename;
+        file.close();
+        file.open(filePath.c_str());
+        counter++;
+    }
+
+    return uniqueFilename;
+}
+
+void Api::handleFile() {
+    std::string method = _request->getMethod();
+
+    if (method == "POST") {
+        handleFileUpload();
+    } else if (method == "GET") {
+        handleFileDownload();
+    } else if (method == "DELETE") {
+        handleFileDelete();
+    } else {
+        sendError(405); // Método no permitido
+    }
+}
 
 void Api::handleFileUpload() {
-    _request->printRequest();
     if (_request == NULL) {
         sendError(400);
         return;
     }
 
-    std::string contentType = _request->getContentType();
-    if (contentType.find("multipart/form-data") == std::string::npos) {
-        sendError(415);
+    std::vector<FormField> formFields = _request->getForm();
+
+    if (formFields.empty()) {
+        sendError(400);
         return;
     }
-    //HANDLE UPLOADED FILE
+
+    if (!createDirectory("www/uploads")) {
+        sendError(500);
+        return;
+    }
+
+    bool fileUploaded = false;
+
+    for (std::vector<FormField>::iterator it = formFields.begin(); it != formFields.end(); ++it) {
+        if (!it->filename.empty()) {
+            std::string uniqueFilename = generateUniqueFilename("www/uploads", it->filename);
+            std::string filePath = "www/uploads/" + uniqueFilename;
+
+            std::ofstream outFile(filePath.c_str(), std::ios::binary);
+            if (!outFile) {
+                sendError(500);
+                return;
+            }
+
+            outFile.write(it->value.c_str(), it->value.size());
+            outFile.close();
+            fileUploaded = true;
+        }
+    }
+
+    if (fileUploaded) {
+        _httpResponse = "HTTP/1.1 200 OK\r\n"
+                        "Content-Type: text/plain\r\n"
+                        "Content-Length: 26\r\n"
+                        "\r\n"
+                        "File uploaded successfully";
+    } else {
+        sendError(400);
+    }
+
+    sendResponse(_client_socket);
 }
+
+void Api::handleFileDownload() {
+    std::string filePath = "www" + _request->getUri();
+    std::ifstream inFile(filePath.c_str(), std::ios::binary);
+
+    if (!inFile) {
+        sendError(404);
+        return;
+    }
+
+    std::ostringstream oss;
+    oss << inFile.rdbuf();
+    std::string fileContent = oss.str();
+
+    _httpResponse = "HTTP/1.1 200 OK\r\n"
+                    "Content-Type: application/octet-stream\r\n"
+                    "Content-Length: " + itos(fileContent.size()) + "\r\n"
+                    "\r\n" +
+                    fileContent;
+
+    sendResponse(_client_socket);
+}
+
+void Api::handleFileDelete() {
+    std::string filePath = "www" + _request->getUri();
+
+    if (unlink(filePath.c_str()) != 0) {
+        sendError(404);
+    } else {
+        _httpResponse = "HTTP/1.1 200 OK\r\n"
+                        "Content-Type: text/plain\r\n"
+                        "Content-Length: 21\r\n"
+                        "\r\n"
+                        "File deleted successfully";
+        sendResponse(_client_socket);
+    }
+}
+
 
 
 
@@ -229,7 +339,7 @@ void Api::handleRequest(int client_socket) {
             }
         }
         else if (route.path == "uploads") {
-            handleFileUpload();
+            handleFile();
         }
         else{
             std::cout << "Error no especificado " << route.path << std::endl;
@@ -238,7 +348,7 @@ void Api::handleRequest(int client_socket) {
     }
     else
     {
-        sendError(500); // TODO Comprobar error
+        sendError(500);
     }
 }
 

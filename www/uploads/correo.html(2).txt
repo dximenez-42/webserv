@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 90%;
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #007BFF;
+        }
+        p {
+            margin-bottom: 15px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #ffffff;
+            background-color: #007BFF;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #777777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p>Hola,</p>
+        <p>Mi nombre es Carlos y dirijo el equipo que está desarrollando NearU, una nueva app que puede ser de gran ayuda para <strong>Chipé</strong> Club.</p>
+        <p>Hemos identificado un problema común entre la población y sobre todo entre los jóvenes: la dificultad para encontrar lugares donde salir en zonas que no conocen y mantenerse al tanto de los eventos que podrían interesarles en su área. Es por eso que hemos creado NearU, una app diseñada para centralizar información sobre eventos, bares, restaurantes, fiestas y mucho más, todo cerca de ti.</p>
+        <p>Estamos contactando con los mejores bares de España para colaborar en la solución de este problema y creemos que <strong>Chipé</strong> Club sería un gran aliado en esta iniciativa.</p>
+        <p>Aquí tienes lo que ofrece la app:</p>
+        <ul>
+            <li><strong>Aumenta tu visibilidad local:</strong> Destaca tu negocio ante personas en tu zona que ya están buscando lo que ofreces.</li>
+            <li><strong>Promociona tus eventos y ofertas:</strong> De manera directa y accesible.</li>
+            <li><strong>Recibe opinión rápida y directa de los clientes:</strong> Conoce mejor sus gustos de forma fácil e inmediata.</li>
+        </ul>
+        <p>Hemos creado un breve formulario para recoger tu opinión y me encantaría que lo llenaras si tienes un par de minutos. Tu opinión contribuirá a dar forma a NearU, nos ayudará a seguir trabajando y potenciará la visibilidad de <strong>Chipé</strong> Club en la app.</p>
+        <a href="enlace al formulario" class="button">Haz clic aquí para llenar el formulario</a>
+        <p>Si tienes alguna otra sugerencia o simplemente quieres información sobre cómo NearU podría ayudarte, no dudes en responder a este correo. Estoy aquí para escuchar y colaborar.</p>
+        <p>Gracias por tu tiempo y apoyo. Tu colaboración es muy importante para hacer que NearU sea una gran herramienta para [Nombre del Negocio].</p>
+        <p>Un saludo,</p>
+        <p>Carlos<br>Creador de NearU</p>
+        <p class="footer">[Tu Contacto]</p>
+    </div>
+</body>
+</html>
