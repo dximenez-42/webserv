@@ -104,7 +104,6 @@ Server* Webserv::findServer(int client_socket) {
 }
 
 
-
 int Webserv::readRequest(int client_socket) {
     std::cout << "Se lee la request" << std::endl;
     std::vector<char> requestData;
@@ -120,7 +119,7 @@ int Webserv::readRequest(int client_socket) {
         if (headersEnd != std::string::npos) {
             headersComplete = true;
             headersEnd += 4;
-            
+
             size_t contentLengthPos = requestString.find("Content-Length: ");
             if (contentLengthPos != std::string::npos) {
                 contentLengthPos += 16;
@@ -143,10 +142,8 @@ int Webserv::readRequest(int client_socket) {
 
     std::string requestString(requestData.begin(), requestData.end());
     _request = new Request();
-    std::cout << "LLEGA" << std::endl;
     _request->fillRequest(requestString);
-	_request->printRequest();
     _api.setRequest(_request);
-    
+
     return (valread);
 }

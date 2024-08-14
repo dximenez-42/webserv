@@ -10,7 +10,7 @@ class Request {
 	private:
 		std::string _method;
 		std::string _normalizedUri;
-		//std::string _basename;
+		std::string _basename;
 
 		std::string _http_version;
 		std::string _content_type;

@@ -326,7 +326,8 @@ void    Api::sendResponse(int client_socket)
 }
 
 
-void Api::listDirectory(const std::string& directoryPath) {
+void Api::listDirectory(const std::string& directoryName) {
+    std::string directoryPath = "www/" + directoryName;
     std::stringstream html;
     html << "<html><body><h1>Directory Listing</h1><ul>";
 
@@ -336,7 +337,7 @@ void Api::listDirectory(const std::string& directoryPath) {
         while ((ent = readdir(dir)) != NULL) {
             std::string name = ent->d_name;
             if (name != "." && name != "..") {
-                html << "<li><a href=\"" << name << "\">" << name << "</a></li>";
+                html << "<li><a href=\"" << directoryName << "/" << name << "\">" << name << "</a></li>";
             }
         }
         closedir(dir);
@@ -353,22 +354,17 @@ void Api::listDirectory(const std::string& directoryPath) {
 
 
 void Api::handleRequest(int client_socket) {
-    _request->printRequest();
     _client_socket = client_socket;
-
     std::string normalizedUri = _request->getNormalizedUri();
 
-    // Gestionar index.html o una URI vacía
     if (normalizedUri.empty() || normalizedUri == "index.html" || normalizedUri == "index.htm") {
-        std::string htmlContent = readHtmlFile("www/index.html");
-        if (!htmlContent.empty()) {
-            prepareHtmlResponse(htmlContent);
-        } else {
-            std::cerr << "Error: File not found or empty" << std::endl;
-            sendError(404);
-            return;
-        }
-        sendResponse(client_socket);
+        serveFile("www/index.html");
+        return;
+    }
+
+    if (normalizedUri.find("errors") == 0 && !_request->getBasename().empty()) {
+        std::cout << "Entra y deberia devolver el archivo" << std::endl;
+        serveFile("www/" + normalizedUri + "/" + _request->getBasename());
         return;
     }
 
@@ -377,60 +373,72 @@ void Api::handleRequest(int client_socket) {
         return;
     }
 
-    std::vector<Route> routes = _server->getRoutes();
     Route route = findRoute();
-
     if (!route.location.empty() && !route.method.empty() && !route.path.empty()) {
-        if (route.location.find("http://") == 0 || route.location.find("https://") == 0) {
-            prepareRedirectResponse(route.location);
-        } else if (endsWith(route.location, ".json")) {
-            std::string jsonContent = readJsonFile(route.location);
-            if (!jsonContent.empty()) {
-                prepareJsonResponse(jsonContent);
-            } else {
-                std::cerr << "Error: File not found or empty" << std::endl;
-                sendError(404);
-                return;
-            }
-        } else if (endsWith(route.location, ".html")) {
-            std::string htmlContent = readHtmlFile(route.location);
-            if (!htmlContent.empty()) {
-                prepareHtmlResponse(htmlContent);
-            } else {
-                std::cerr << "Error: File not found or empty" << std::endl;
-                sendError(404);
-                return;
-            }
-        } else if (route.path == "uploads") {
-            // Comprobar si hay un nombre de archivo después de /uploads/
-            std::string relativePath = normalizedUri.substr(strlen("uploads/"));
-            if (!relativePath.empty()) {
-                handleFile();
-            } else {
-                listDirectory(route.path);
-            }
-        } else {
-            std::cout << "Error no especificado " << route.path << std::endl;
-        }
-        sendResponse(client_socket);
+        handleRoute(route);
     } else {
-        sendError(500);
-        return;
+        handleDirectoryOrError(normalizedUri);
     }
+}
 
-    // Comprobar si el URI corresponde a un directorio existente y listar su contenido
+void Api::handleRoute(const Route& route) {
+    if (route.location.find("http://") == 0 || route.location.find("https://") == 0) {
+        prepareRedirectResponse(route.location);
+    } else if (endsWith(route.location, ".json")) {
+        serveJson(route.location);
+    } else if (endsWith(route.location, ".html")) {
+        serveFile(route.location);
+    } else if (route.path == "uploads") {
+        if (!_request->getBasename().empty() || (_request->getBasename().empty() && (_request->getMethod() == "POST" || _request->getMethod() == "DELETE"))) {
+            handleFile();
+        } else {
+            listDirectory(route.path);
+        }
+    } else {
+        std::cerr << "Error: Ruta no especificada " << route.path << std::endl;
+        sendError(404);
+    }
+    sendResponse(_client_socket);
+}
+
+void Api::handleDirectoryOrError(const std::string& normalizedUri) {
     std::string directoryPath = "www/" + normalizedUri;
-    if (directoryPath[directoryPath.size() - 1] == '/') {
-        directoryPath.erase(directoryPath.size() - 1);  // Eliminar la barra final si existe
+
+    if (!directoryPath.empty() && directoryPath[directoryPath.size() - 1] == '/') {
+        directoryPath.erase(directoryPath.size() - 1);
     }
 
     struct stat info;
     if (stat(directoryPath.c_str(), &info) == 0 && S_ISDIR(info.st_mode)) {
-        // Si la ruta es un directorio, listar su contenido
-        listDirectory(directoryPath);
-        sendResponse(client_socket);
-        return;
+        listDirectory(normalizedUri);
+        sendResponse(_client_socket);
+    } else {
+        sendError(404);
     }
 }
+
+
+void Api::serveFile(const std::string& path) {
+    std::string content = readHtmlFile(path);
+    if (!content.empty()) {
+        prepareHtmlResponse(content);
+    } else {
+        std::cerr << "Error: Archivo no encontrado o vacío - " << path << std::endl;
+        sendError(404);
+    }
+    sendResponse(_client_socket);
+}
+
+void Api::serveJson(const std::string& path) {
+    std::string jsonContent = readJsonFile(path);
+    if (!jsonContent.empty()) {
+        prepareJsonResponse(jsonContent);
+    } else {
+        std::cerr << "Error: Archivo JSON no encontrado o vacío - " << path << std::endl;
+        sendError(404);
+    }
+    sendResponse(_client_socket);
+}
+
 
 

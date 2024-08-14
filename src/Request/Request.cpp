@@ -4,7 +4,7 @@ Request::Request()
 {
 	_method.clear();
 	_normalizedUri.clear();
-	//_basename.clear();
+	_basename.clear();
 	_http_version.clear();
 	_content_type.clear();
 	_content_boundary.clear();
@@ -54,8 +54,22 @@ void	Request::fillRequest(std::string str) {
 		if (words[0] == "GET" || words[0] == "POST" || words[0] == "DELETE")
 		{
 			_method = words[0];
-			_normalizedUri = normalizePath(words[1]);
-			//_basename = getPathBasename(uri);
+			std::string fullPath = words[1];
+
+			if (!fullPath.empty() && fullPath[0] == '/') {
+				fullPath.erase(0, 1);
+			}
+
+			size_t lastSlash = fullPath.find_last_of('/');
+
+			if (lastSlash != std::string::npos) {
+				_normalizedUri = fullPath.substr(0, lastSlash);
+				_basename = fullPath.substr(lastSlash + 1);
+			} else {
+				_normalizedUri = fullPath;
+				_basename.clear();
+			}
+
 			_http_version = words[2];
 		}
 		else if (words[0] == "Content-Type:" && _content_type.empty())
@@ -164,7 +178,7 @@ void	Request::printRequest()
 {
 	std::cout << std::endl << std::endl << "Method: " << _method << std::endl;
 	std::cout << "Dirname: " << _normalizedUri << std::endl;
-	//std::cout << "Basename: " << _basename << std::endl;
+	std::cout << "Basename: " << _basename << std::endl;
 	std::cout << "HTTP Version: " << _http_version << std::endl;
 	std::cout << "Content-Type: " << _content_type << std::endl;
 	std::cout << "Content-Length: " << _content_length << std::endl << std::endl;
@@ -180,7 +194,7 @@ void	Request::printRequest()
 		}
 	}
 	std::cout << std::endl << std::endl << std::endl;
-
+	
 }
 
 std::string				Request::getMethod() const 
@@ -190,8 +204,7 @@ std::string				Request::getMethod() const
 
 std::string		Request::getBasename() const
 {
-	return "BORRAR BASENAME";
-	//return _basename;
+	return _basename;
 };
 
 std::string				Request::getNormalizedUri() const

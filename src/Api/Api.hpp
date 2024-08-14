@@ -40,6 +40,11 @@ class Api
         bool        createDirectory(const std::string&);
         void        listDirectory(const std::string& directoryPath);
 
+        void        serveFile(const std::string& path);
+        void        serveJson(const std::string& path);
+        void        handleDirectoryOrError(const std::string& normalizedUri);
+        void        handleRoute(const Route& route);
+
         Route       findRoute();
         std::string generateUniqueFilename(const std::string& path, const std::string& filename);
 
