@@ -140,9 +140,12 @@ int Webserv::readRequest(int client_socket) {
             }
         }
     }
+
     std::string requestString(requestData.begin(), requestData.end());
     _request = new Request();
+    std::cout << "LLEGA" << std::endl;
     _request->fillRequest(requestString);
+	_request->printRequest();
     _api.setRequest(_request);
     
     return (valread);

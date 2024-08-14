@@ -38,6 +38,7 @@ class Api
         void        handleFileDownload();
         void        handleFileDelete();
         bool        createDirectory(const std::string&);
+        void        listDirectory(const std::string& directoryPath);
 
         Route       findRoute();
         std::string generateUniqueFilename(const std::string& path, const std::string& filename);

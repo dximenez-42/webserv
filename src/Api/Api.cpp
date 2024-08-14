@@ -78,8 +78,6 @@ std::string readHtmlFile(const std::string& filepath) {
 }
 
 
-
-
 void Api::sendError(int errorCode)
 {
     std::ostringstream oss;
@@ -173,7 +171,7 @@ void Api::handleFile() {
     } else if (method == "DELETE") {
         handleFileDelete();
     } else {
-        sendError(405); // Método no permitido
+        sendError(405);
     }
 }
 
@@ -327,22 +325,65 @@ void    Api::sendResponse(int client_socket)
     }
 }
 
+
+void Api::listDirectory(const std::string& directoryPath) {
+    std::stringstream html;
+    html << "<html><body><h1>Directory Listing</h1><ul>";
+
+    DIR *dir;
+    struct dirent *ent;
+    if ((dir = opendir(directoryPath.c_str())) != NULL) {
+        while ((ent = readdir(dir)) != NULL) {
+            std::string name = ent->d_name;
+            if (name != "." && name != "..") {
+                html << "<li><a href=\"" << name << "\">" << name << "</a></li>";
+            }
+        }
+        closedir(dir);
+    } else {
+        html << "<li>Error opening directory</li>";
+    }
+    html << "</ul></body></html>";
+
+    _httpResponse = "HTTP/1.1 200 OK\r\n"
+                    "Content-Type: text/html\r\n"
+                    "Content-Length: " + itos(html.str().length()) + "\r\n"
+                    "\r\n" + html.str();
+}
+
+
 void Api::handleRequest(int client_socket) {
     _request->printRequest();
     _client_socket = client_socket;
-    if (checkMethod() == -1)
-    {
+
+    std::string normalizedUri = _request->getNormalizedUri();
+
+    // Gestionar index.html o una URI vacía
+    if (normalizedUri.empty() || normalizedUri == "index.html" || normalizedUri == "index.htm") {
+        std::string htmlContent = readHtmlFile("www/index.html");
+        if (!htmlContent.empty()) {
+            prepareHtmlResponse(htmlContent);
+        } else {
+            std::cerr << "Error: File not found or empty" << std::endl;
+            sendError(404);
+            return;
+        }
+        sendResponse(client_socket);
+        return;
+    }
+
+    if (checkMethod() == -1) {
         sendError(405);
         return;
     }
-    std::vector<Route> routes = _server->getRoutes();
 
+    std::vector<Route> routes = _server->getRoutes();
     Route route = findRoute();
 
     if (!route.location.empty() && !route.method.empty() && !route.path.empty()) {
-        if (route.location.find("http://") == 0 || route.location.find("https://") == 0)
+        if (route.location.find("http://") == 0 || route.location.find("https://") == 0) {
             prepareRedirectResponse(route.location);
-        else if (endsWith(route.location, ".json")) {
+        } else if (endsWith(route.location, ".json")) {
             std::string jsonContent = readJsonFile(route.location);
             if (!jsonContent.empty()) {
                 prepareJsonResponse(jsonContent);
@@ -351,8 +392,7 @@ void Api::handleRequest(int client_socket) {
                 sendError(404);
                 return;
             }
-        }
-        else if (endsWith(route.location, ".html")) {
+        } else if (endsWith(route.location, ".html")) {
             std::string htmlContent = readHtmlFile(route.location);
             if (!htmlContent.empty()) {
                 prepareHtmlResponse(htmlContent);
@@ -361,18 +401,36 @@ void Api::handleRequest(int client_socket) {
                 sendError(404);
                 return;
             }
-        }
-        else if (route.path == "uploads") {
-            handleFile();
-        }
-        else{
+        } else if (route.path == "uploads") {
+            // Comprobar si hay un nombre de archivo después de /uploads/
+            std::string relativePath = normalizedUri.substr(strlen("uploads/"));
+            if (!relativePath.empty()) {
+                handleFile();
+            } else {
+                listDirectory(route.path);
+            }
+        } else {
             std::cout << "Error no especificado " << route.path << std::endl;
         }
         sendResponse(client_socket);
-    }
-    else
-    {
+    } else {
         sendError(500);
+        return;
+    }
+
+    // Comprobar si el URI corresponde a un directorio existente y listar su contenido
+    std::string directoryPath = "www/" + normalizedUri;
+    if (directoryPath[directoryPath.size() - 1] == '/') {
+        directoryPath.erase(directoryPath.size() - 1);  // Eliminar la barra final si existe
+    }
+
+    struct stat info;
+    if (stat(directoryPath.c_str(), &info) == 0 && S_ISDIR(info.st_mode)) {
+        // Si la ruta es un directorio, listar su contenido
+        listDirectory(directoryPath);
+        sendResponse(client_socket);
+        return;
     }
 }
+
 

@@ -4,7 +4,7 @@ Request::Request()
 {
 	_method.clear();
 	_normalizedUri.clear();
-	_basename.clear();
+	//_basename.clear();
 	_http_version.clear();
 	_content_type.clear();
 	_content_boundary.clear();
@@ -46,16 +46,16 @@ void	Request::fillRequest(std::string str) {
 	for (size_t i = 0; i < lines.size(); i++)
 	{
 		std::vector<std::string> words = splitSpaces(lines[i]);
+	    std::cout << lines[i] << std::endl;
 		
 		if (words.empty())
 			continue;
 
 		if (words[0] == "GET" || words[0] == "POST" || words[0] == "DELETE")
 		{
-			std::string uri = normalizePath(words[1]);
 			_method = words[0];
-			_normalizedUri = getPathDirname(uri);
-			_basename = getPathBasename(uri);
+			_normalizedUri = normalizePath(words[1]);
+			//_basename = getPathBasename(uri);
 			_http_version = words[2];
 		}
 		else if (words[0] == "Content-Type:" && _content_type.empty())
@@ -164,7 +164,7 @@ void	Request::printRequest()
 {
 	std::cout << std::endl << std::endl << "Method: " << _method << std::endl;
 	std::cout << "Dirname: " << _normalizedUri << std::endl;
-	std::cout << "Basename: " << _basename << std::endl;
+	//std::cout << "Basename: " << _basename << std::endl;
 	std::cout << "HTTP Version: " << _http_version << std::endl;
 	std::cout << "Content-Type: " << _content_type << std::endl;
 	std::cout << "Content-Length: " << _content_length << std::endl << std::endl;
@@ -190,7 +190,8 @@ std::string				Request::getMethod() const
 
 std::string		Request::getBasename() const
 {
-	return _basename;
+	return "BORRAR BASENAME";
+	//return _basename;
 };
 
 std::string				Request::getNormalizedUri() const

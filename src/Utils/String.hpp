@@ -88,6 +88,8 @@ bool	isValidPath(const T str)
 template <typename T>
 T&	normalizePath(T& src)
 {
+	std::cout << src << std::endl;
+
 	if (src[0] == '/')
 		src.erase(0, 1);
 	if (src[src.size() - 1] == '/')
