@@ -71,14 +71,22 @@ void Webserv::runServers()
 				std::cout << "Nueva conexión aceptada en puerto: " << server->getServerPort() << std::endl;
 			}
 		}
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0b2b29acd2e43031e3580fab11445801a1d46138
 		for (std::vector<int>::iterator it = _client_sockets.begin(); it != _client_sockets.end();) {
     		int client_socket = *it;
 			if (FD_ISSET(client_socket, &readfds)) {
 				// char buffer[BUFFER_SIZE] = {0};		// TODO remove
 				ssize_t valread = readRequest(client_socket);
+<<<<<<< HEAD
 			    std::cout << std::endl << "llega y valread: " << valread << std::endl;
 
 				if (valread <= 0) {
+=======
+				if (valread == 0) {
+>>>>>>> 0b2b29acd2e43031e3580fab11445801a1d46138
 					close(client_socket);
 					std::cout << "Cliente desconectado" << std::endl;
 					it = _client_sockets.erase(it);
@@ -106,17 +114,28 @@ Server* Webserv::findServer(int client_socket) {
 
 
 int Webserv::readRequest(int client_socket) {
+<<<<<<< HEAD
     std::cout << std::endl << "Se lee la request" << std::endl;
 
     std::vector<char> requestData;
     char buffer[BUFFER_SIZE];
     ssize_t valread = 0;
+=======
+    std::cout << "Se lee la request" << std::endl;
+    std::vector<char> requestData;
+    char buffer[BUFFER_SIZE];
+    ssize_t valread;
+>>>>>>> 0b2b29acd2e43031e3580fab11445801a1d46138
     bool headersComplete = false;
     size_t contentLength = 0;
 
     while (!headersComplete && (valread = recv(client_socket, buffer, BUFFER_SIZE, 0)) > 0) {
+<<<<<<< HEAD
         
 		requestData.insert(requestData.end(), buffer, buffer + valread);
+=======
+        requestData.insert(requestData.end(), buffer, buffer + valread);
+>>>>>>> 0b2b29acd2e43031e3580fab11445801a1d46138
         std::string requestString(requestData.begin(), requestData.end());
         size_t headersEnd = requestString.find("\r\n\r\n");
         if (headersEnd != std::string::npos) {
@@ -147,5 +166,9 @@ int Webserv::readRequest(int client_socket) {
     _request = new Request();
     _request->fillRequest(requestString);
     _api.setRequest(_request);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0b2b29acd2e43031e3580fab11445801a1d46138
     return (valread);
 }

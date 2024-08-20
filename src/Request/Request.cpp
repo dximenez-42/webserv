@@ -34,7 +34,10 @@ Request& Request::operator=(const Request& rhs)
 Request::~Request()
 {
 	_form.clear();
+<<<<<<< HEAD
 	std::cout << "Request deleted" << std::endl;
+=======
+>>>>>>> 0b2b29acd2e43031e3580fab11445801a1d46138
 }
 
 #include <stdio.h>
