@@ -92,6 +92,21 @@ std::vector<Route>			Server::getRoutes() const
 	return (_routes);
 }
 
+int		Server::getServerFd() const
+{
+	return (_server_fd);
+}
+
+struct sockaddr_in	Server::getServerAddress() const
+{
+	return (_address);
+}
+
+std::vector<int> 	Server::getClientSockets() const
+{
+	return _client_sockets;
+}
+
 void	Server::setServerPort(int port)
 {
 	_server_port = port;
@@ -147,26 +162,34 @@ void	Server::addRoute(Route route)
 	_routes.push_back(route);
 }
 
+void Server::pushClientSocket(int clientSocket) {
+	_client_sockets.push_back(clientSocket);
+	std::cout << "Socket " << clientSocket << " pushed" << std::endl;
+}
 
-int Server::setUp() {
-    struct sockaddr_in address;
+bool Server::hasClientSocket(int client_socket) const {
+    return std::find(_client_sockets.begin(), _client_sockets.end(), client_socket) != _client_sockets.end();
+}
 
+
+int Server::setUp() 
+{
     _server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (_server_fd == 0) {
         std::cerr << "Socket failed" << std::endl;
         return -1;
     }
 
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(_server_port);
+    _address.sin_family = AF_INET;
+    _address.sin_addr.s_addr = INADDR_ANY;//inet_addr(_server_host.c_str());
+    _address.sin_port = htons(_server_port);
 
-    if (bind(_server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
+    if (bind(_server_fd, (struct sockaddr*)&_address, sizeof(_address)) < 0) {
         std::cerr << "Bind failed" << std::endl;
         close(_server_fd);
         return -1;
     }
-
+	std::cout << "Server " << _server_name << " setted up" << std::endl;
 	return 0;
 }
 
@@ -179,24 +202,25 @@ int Server::listen() {
     }
 
     std::cout << "Server " << _server_name << " listening on port " << _server_port << std::endl;
-	
 	return 0;
 }
 
 
 int Server::accept() {
-    int addrlen = sizeof(address);
-
-    _server_socket = ::accept(_server_fd, (struct sockaddr*)&address, (socklen_t*)&addrlen);
-    if (_server_socket < 0) {
+	int new_socket;
+    int addrlen = sizeof(_address);
+	std::cout << htons(_address.sin_port) << std::endl;
+	
+    new_socket = ::accept(_server_fd, (struct sockaddr*)&_address, (socklen_t*)&addrlen);
+    if (new_socket < 0) {
         std::cerr << "Accept failed" << std::endl;
         close(_server_fd);
-        return -1;
+		exit(EXIT_FAILURE);
     }
 	else
 		std::cout << "Connection in " << _server_name << " on port " << _server_port << " accepted" << std::endl;
 
-	return 0;
+	return new_socket;
 }
 
 int Server::read() {

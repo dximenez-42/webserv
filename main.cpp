@@ -1,9 +1,12 @@
 #include <iostream>
 #include "includes.hpp"
 #include "src/Webserv/Webserv.hpp"
+#include "src/Request/Request.hpp"
+#include <csignal>
 
 int	main(int ac, char **av, char **envp)
 {
+
 	(void)envp;
 	if (ac != 2)
 	{
@@ -19,10 +22,6 @@ int	main(int ac, char **av, char **envp)
 	{
 		std::string	filename = av[1];
 		Webserv		webserv = Webserv(filename);
-		webserv.printServers();
-		webserv.setUpServers();
-		webserv.runServers();
-
 	}
 	catch(const std::exception& e)
 	{
