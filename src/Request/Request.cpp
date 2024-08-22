@@ -46,7 +46,7 @@ void	Request::fillRequest(std::string str) {
 	for (size_t i = 0; i < lines.size(); i++)
 	{
 		std::vector<std::string> words = splitSpaces(lines[i]);
-	    std::cout << lines[i] << std::endl;
+	    // std::cout << lines[i] << std::endl; // SUMAMA
 		
 		if (words.empty())
 			continue;
@@ -160,7 +160,7 @@ void	Request::fillRequest(std::string str) {
 	}
 	lines.clear();
 
-	std::cout << "llega" << std::endl;
+	// std::cout << "llega" << std::endl;
 }
 
 std::string Request::getBoundary() const {

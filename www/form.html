@@ -42,12 +42,12 @@
     </style>
 </head>
 <body>
-       <form class="container" action="uploads" method="POST">
+       <form class="container" action="uploads" method="POST" enctype="multipart/form-data">
             <h1>FORMULARIO</h1>
-            <input type="text" placeholder="Nombre">
-            <input type="text" placeholder="Email">
-            <input type="file">
-            <input type="submit" name="Enviar" id="">
+            <input name="name" type="text" placeholder="Nombre" value="user">
+            <input name="email" type="text" placeholder="Email" value="email@email.com">
+            <input name="file" type="file">
+            <input type="submit">
        </form>
 </body>
 </html>

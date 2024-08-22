@@ -88,8 +88,6 @@ bool	isValidPath(const T str)
 template <typename T>
 T&	normalizePath(T& src)
 {
-	std::cout << src << std::endl;
-
 	if (src[0] == '/')
 		src.erase(0, 1);
 	if (src[src.size() - 1] == '/')
@@ -189,9 +187,6 @@ bool	isValidFilename(T str)
 {
 	bool	has_text = false;
 	size_t	max = str.size();
-
-	std::cout << "str: " << str << std::endl;
-	std::cout << "max: " << max << std::endl;
 
 	for (size_t i = max - 1; i > 0; i--)
 	{

@@ -214,11 +214,10 @@ void Api::handleFileUpload() {
     }
 
     if (fileUploaded) {
-        _httpResponse = "HTTP/1.1 200 OK\r\n"
-                        "Content-Type: text/plain\r\n"
-                        "Content-Length: 26\r\n"
-                        "\r\n"
-                        "File uploaded successfully";
+        _httpResponse =  "HTTP/1.1 301 Moved Permanently\r\n"
+                        "Location: ./uploads \r\n"
+                        "Content-Length: 0\r\n"
+                        "\r\n";
     } else {
         sendError(400);
     }
@@ -256,7 +255,7 @@ void Api::handleFileDownload() {
     std::string filePath = "www/" + _request->getNormalizedUri() + "/" + _request->getBasename();
     std::ifstream inFile(filePath.c_str(), std::ios::binary);
 
-    std::cout << "File Path: " << filePath << std::endl;
+    // std::cout << "File Path: " << filePath << std::endl;
     if (!inFile) {
         sendError(404);
         return;
@@ -398,6 +397,8 @@ void Api::handleRoute(const Route& route) {
         serveJson(route.location);
     } else if (endsWith(route.location, ".html")) {
         serveFile(route.location);
+    } else if (endsWith(route.location, ".py") || endsWith(route.location, ".php")) {
+
     } else if (route.path == "uploads") {
         if (!_request->getBasename().empty() || (_request->getBasename().empty() && (_request->getMethod() == "POST" || _request->getMethod() == "DELETE"))) {
             handleFile();
@@ -410,6 +411,56 @@ void Api::handleRoute(const Route& route) {
     }
     sendResponse(_client_socket);
 }
+
+// void Api::handleCGI()
+// {
+//     const char* script_path;
+//     const char* method;
+//     const char* query_string;
+//     int client_fd;
+
+//     int pipe_fd[2];
+//     pipe(pipe_fd); // Create a pipe
+
+//     pid_t pid = fork();
+
+//     if (pid == 0) { // Child process
+//         // Redirect stdout to the write end of the pipe
+//         dup2(pipe_fd[1], STDOUT_FILENO);
+//         close(pipe_fd[0]);
+
+//         // Set environment variables
+//         setenv("REQUEST_METHOD", method, 1);
+//         setenv("QUERY_STRING", query_string, 1);
+//         setenv("SCRIPT_NAME", script_path, 1);
+
+//         // Execute the CGI script
+//         char* const args[] = {strdup(script_path), nullptr};
+//         execve(script_path, args, environ);
+
+//         // If execve fails
+//         perror("execve failed");
+//         exit(EXIT_FAILURE);
+//     } else if (pid > 0) { // Parent process
+//         close(pipe_fd[1]); // Close write end of the pipe in parent
+
+//         // Wait for the child process to finish
+//         waitpid(pid, nullptr, 0);
+
+//         // Read the CGI script output from the pipe
+//         char buffer[4096];
+//         ssize_t nbytes;
+//         while ((nbytes = read(pipe_fd[0], buffer, sizeof(buffer))) > 0) {
+//             // Send the output to the client
+//             write(client_fd, buffer, nbytes);
+//         }
+
+//         close(pipe_fd[0]); // Close read end of the pipe in parent
+//     } else {
+//         perror("fork failed");
+//         exit(EXIT_FAILURE);
+//     }
+// }
 
 void Api::handleDirectoryOrError(const std::string& normalizedUri) {
     std::string directoryPath = "www/" + normalizedUri;

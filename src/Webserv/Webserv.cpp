@@ -68,7 +68,7 @@ void Webserv::runServers()
 				_client_sockets.push_back(new_socket);
 				_api.setServer(server);
 
-				std::cout << "Nueva conexión aceptada en puerto: " << server->getServerPort() << std::endl;
+				// std::cout << "Nueva conexión aceptada en puerto: " << server->getServerPort() << std::endl;
 			}
 		}
 
@@ -106,7 +106,7 @@ Server* Webserv::findServer(int client_socket) {
 
 
 int Webserv::readRequest(int client_socket) {
-    std::cout << std::endl << "Se lee la request" << std::endl;
+    // std::cout << std::endl << "Se lee la request" << std::endl;
 
     std::vector<char> requestData;
     char buffer[BUFFER_SIZE];
