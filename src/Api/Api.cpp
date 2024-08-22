@@ -176,6 +176,7 @@ void Api::handleFile() {
 }
 
 void Api::handleFileUpload() {
+    std::cout << "Entra en handle upload" << std::endl;
     if (_request == NULL) {
         sendError(400);
         return;
@@ -235,6 +236,7 @@ std::string getMimeType(const std::string& path) {
     mimeTypes[".png"] = "image/png";
     mimeTypes[".jpg"] = "image/jpeg";
     mimeTypes[".jpeg"] = "image/jpeg";
+    mimeTypes[".ico"] = "image/ico";
     mimeTypes[".gif"] = "image/gif";
     mimeTypes[".svg"] = "image/svg+xml";
     mimeTypes[".txt"] = "text/plain";
@@ -279,6 +281,7 @@ void Api::handleFileDelete() {
     std::string filePath = "www/" + _request->getNormalizedUri() + "/" + _request->getBasename();
 
     if (unlink(filePath.c_str()) != 0) {
+        std::cerr << "Error filepath" << std::endl;
         sendError(404);
     } else {
         _httpResponse = "HTTP/1.1 200 OK\r\n"

@@ -34,16 +34,12 @@ Request& Request::operator=(const Request& rhs)
 Request::~Request()
 {
 	_form.clear();
-<<<<<<< HEAD
-	std::cout << "Request deleted" << std::endl;
-=======
->>>>>>> 0b2b29acd2e43031e3580fab11445801a1d46138
 }
 
 #include <stdio.h>
 
 void	Request::fillRequest(std::string str) {
-	// std::cout << std::endl << "Request: \n" << str << std::endl << std::endl;
+	 std::cout << std::endl << "Request: \n" << str << std::endl << std::endl;
 
 	std::vector<std::string>	lines = splitChar(str, '\n');
 
@@ -163,6 +159,8 @@ void	Request::fillRequest(std::string str) {
 		words.clear();
 	}
 	lines.clear();
+
+	std::cout << "llega" << std::endl;
 }
 
 std::string Request::getBoundary() const {

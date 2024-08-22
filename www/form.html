@@ -32,27 +32,22 @@
             margin-bottom: 1rem;
             color: #333;
         }
-
+        input {
+            margin: 1rem;
+        }
         p {
             margin: 0;
             color: #666;
         }
-
-        a {
-            text-decoration: none;
-            background-color: #333;
-            color: #fff;
-            padding: 1rem 2rem;
-            border-radius: 20px;
-            margin-top: 2rem;
-        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Welcome to webserv</h1>
-        <p>Your lightweight C++ web server</p>
-        <a href="./form">Go to form</a>
-    </div>
+       <form class="container" action="uploads" method="POST">
+            <h1>FORMULARIO</h1>
+            <input type="text" placeholder="Nombre">
+            <input type="text" placeholder="Email">
+            <input type="file">
+            <input type="submit" name="Enviar" id="">
+       </form>
 </body>
 </html>
