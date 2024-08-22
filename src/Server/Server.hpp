@@ -14,7 +14,6 @@ class Server
 		std::string					_server_index;
 		int							_server_dir_listing;
 		std::string					_server_root;
-		std::string					_server_public;
 		int							_limit_body_size;
 		
 		std::vector<ErrorPage>		_error_pages;
@@ -39,7 +38,6 @@ class Server
 		std::string					getServerIndex() const;
 		int							getServerDirListing() const;
 		std::string					getServerRoot() const;
-		std::string					getServerPublic() const;
 		int							getLimitBodySize() const;
 		std::vector<ErrorPage>		getErrorPages() const;
 		std::vector<std::string>	getMethods() const;
@@ -54,7 +52,6 @@ class Server
 		void	setServerIndex(std::string index);
 		void	setServerDirListing(int dir_listing);
 		void	setServerRoot(std::string root);
-		void	setServerPublic(std::string public_dir);
 		void	setLimitBodySize(int limit_body_size);
 		void	addErrorPage(ErrorPage error);
 		void	addMethod(std::string method);

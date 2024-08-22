@@ -148,19 +148,6 @@ void	AConfig::parseServer(std::vector<std::string>& split, unsigned int line_num
 	}
 	else if (split[0] == "root" && !server->getServerRoot().empty())
 		return newError(line_number, "root already defined");
-	else if (split[0] == "public" && server->getServerPublic().empty())
-	{
-		if (server->getServerRoot().empty())
-		{
-			_open_blocks.push_back(BAD);
-			return newError(line_number, "root must be defined before public");
-		}
-		if (!::isValidPath(::joinPaths<std::string>(_servers.back()->getServerRoot(), split[1])))
-			return newError(line_number, "invalid public path");
-		server->setServerPublic(::joinPaths<std::string>(_servers.back()->getServerRoot(), normalizePath(split[1])));
-	}
-	else if (split[0] == "public" && !server->getServerPublic().empty())
-		return newError(line_number, "public already defined");
 	else if (split[0] == "limit_body_size" && server->getLimitBodySize() == 0)
 	{
 		server->setLimitBodySize(std::atoi(split[1].c_str()));
@@ -408,8 +395,6 @@ void	AConfig::checkConfig()
 			errors.push_back("dir_listing");
 		if (_servers[i]->getServerRoot().empty())
 			errors.push_back("root");
-		if (_servers[i]->getServerPublic().empty())
-			errors.push_back("public");
 		if (_servers[i]->getLimitBodySize() == 0)
 			errors.push_back("limit_body_size");
 		if (_servers[i]->getMethods().empty())
@@ -502,7 +487,6 @@ void	AConfig::printServers()
 		std::cout << "server_index:\t\t" << _servers[i]->getServerIndex() << std::endl;
 		std::cout << "server_dir_listing:\t" << _servers[i]->getServerDirListing() << std::endl;
 		std::cout << "server_root:\t\t" << _servers[i]->getServerRoot() << std::endl;
-		std::cout << "server_public:\t\t" << _servers[i]->getServerPublic() << std::endl;
 		std::cout << "limit_body_size:\t" << _servers[i]->getLimitBodySize() << std::endl;
 
 		if (!_servers[i]->getErrorPages().empty())

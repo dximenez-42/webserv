@@ -8,7 +8,6 @@ Server::Server()
 	_server_index = "";
 	_server_dir_listing = -1;
 	_server_root = "";
-	_server_public = "";
 	_limit_body_size = 0;
 }
 
@@ -65,11 +64,6 @@ int			Server::getServerDirListing() const
 std::string		Server::getServerRoot() const
 {
 	return (_server_root);
-}
-
-std::string		Server::getServerPublic() const
-{
-	return (_server_public);
 }
 
 int				Server::getLimitBodySize() const
@@ -135,11 +129,6 @@ void	Server::setServerDirListing(int dir_listing)
 void	Server::setServerRoot(std::string root)
 {
 	_server_root = root;
-}
-
-void	Server::setServerPublic(std::string public_dir)
-{
-	_server_public = public_dir;
 }
 
 void	Server::setLimitBodySize(int limit_body_size)

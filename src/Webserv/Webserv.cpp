@@ -148,6 +148,13 @@ int Webserv::readRequest(int client_socket) {
     _request = new Request();
     _request->fillRequest(requestString);
 
+	std::cout << "Method: " << _request->getMethod() << std::endl;
+	for (size_t i = 0; i < _request->getForm().size(); i++)
+	{
+		std::cout << "Key: " << _request->getForm()[i].key << std::endl;
+		std::cout << "Value: " << _request->getForm()[i].value << std::endl;
+		std::cout << "Filename: " << _request->getForm()[i].filename << std::endl;
+	}
     _api.setRequest(_request);
 
     return (valread);

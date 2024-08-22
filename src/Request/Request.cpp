@@ -110,9 +110,11 @@ void	Request::fillRequest(std::string str) {
 			}
 			if (std::string(lines[i]).find(_content_boundary) != std::string::npos)
 			{
-				_form.push_back(form);
+				if (!form.key.empty() && !form.value.empty())
+					_form.push_back(form);
 				form.key.clear();
 				form.value.clear();
+				form.filename.clear();
 				in_form = false;
 				empty_line = false;
 			}
