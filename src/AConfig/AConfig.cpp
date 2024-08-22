@@ -52,7 +52,7 @@ void	AConfig::parseHttp(std::vector<std::string>& split, unsigned int line_numbe
 
 	if (split[0] == "access_log" && _access_log.empty())
 	{
-		if (!::isValidPath(split[1]) && split[1] != "/dev/stdout" && split[1] != "/dev/stderr" && split[1] != "/dev/null")
+		if (!isValidPath(split[1]) && split[1] != "/dev/stdout" && split[1] != "/dev/stderr" && split[1] != "/dev/null")
 			return newError(line_number, "invalid access path");
 		_access_log = split[1];
 	}
@@ -60,7 +60,7 @@ void	AConfig::parseHttp(std::vector<std::string>& split, unsigned int line_numbe
 		return newError(line_number, "access_log already defined");
 	else if (split[0] == "error_log" && _error_log.empty())
 	{
-		if (!::isValidPath(split[1]) && split[1] != "/dev/stdout" && split[1] != "/dev/stderr" && split[1] != "/dev/null")
+		if (!isValidPath(split[1]) && split[1] != "/dev/stdout" && split[1] != "/dev/stderr" && split[1] != "/dev/null")
 			return newError(line_number, "invalid error path");
 		_error_log = split[1];
 	}
@@ -100,7 +100,7 @@ void	AConfig::parseServer(std::vector<std::string>& split, unsigned int line_num
 		return newError(line_number, "port already defined");
 	else if (split[0] == "host" && server->getServerHost().empty())
 	{
-		if (!::isValidIp(split[1]))
+		if (!isValidIp(split[1]))
 			return newError(line_number, "invalid host");
 		if (split[1] == "localhost")
 			server->setServerHost("0.0.0.0");
@@ -140,7 +140,7 @@ void	AConfig::parseServer(std::vector<std::string>& split, unsigned int line_num
 		return newError(line_number, "dir_listing already defined");
 	else if (split[0] == "root" && server->getServerRoot().empty())
 	{
-		if (!::isValidPath(split[1]))
+		if (!isValidPath(split[1]))
 			return newError(line_number, "invalid root path");
 		if (split[1][split[1].length() - 1] == '/')
 			split[1].erase(split[1].length() - 1, split[1].length());
@@ -175,7 +175,7 @@ void	AConfig::parseErrors(std::vector<std::string>& split, unsigned int line_num
 		return newError(line_number, "root must be defined before errors");
 	}
 
-	if (!::isValidPath(::joinPaths<std::string>(_servers.back()->getServerRoot(), split[1])))
+	if (!isValidPath(joinPaths<std::string>(_servers.back()->getServerRoot(), split[1])))
 		return newError(line_number, "invalid error path");
 	ErrorPage	error;
 	error.code = split[0];
@@ -221,16 +221,16 @@ void	AConfig::parseRoutes(std::vector<std::string>& split, unsigned int line_num
 
 	if (split[0] != "GET" && split[0] != "POST" && split[0] != "DELETE")
 		return newError(line_number, "method " + split[0] + " is unsupported");
-	if (!::isValidRoutePath(split[1]))
+	if (!isValidRoutePath(split[1]))
 		return newError(line_number, "invalid route path");
 	if (normalizePath(split[2]) == "errors")
 		return newError(line_number, "route location cannot be \"errors\"");
-	if (!::isValidPath(::joinPaths(_servers.back()->getServerRoot(), split[2])) && !::isHttpRoute(split[2]))
+	if (!isValidPath(::joinPaths(_servers.back()->getServerRoot(), split[2])) && !::isHttpRoute(split[2]))
 		return newError(line_number, "invalid route location");
 	Route	route;
 	route.method = split[0];
 	route.path = normalizePath(split[1]);
-	if (::isHttpRoute(split[2]))
+	if (isHttpRoute(split[2]))
 		route.location = split[2];
 	else
 		route.location = joinPaths(_servers.back()->getServerRoot(), normalizePath(split[2]));
@@ -449,7 +449,7 @@ bool	AConfig::checkErrorExists(ErrorPage& error)
 
 bool	AConfig::checkMethodExists(std::string& method)
 {
-	if (::isInVector(_servers.back()->getMethods(), method))
+	if (isInVector(_servers.back()->getMethods(), method))
 		return true;
 	return false;
 }
