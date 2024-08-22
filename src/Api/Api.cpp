@@ -178,6 +178,7 @@ void Api::handleFile() {
 void Api::handleFileUpload() {
     std::cout << "Entra en handle upload" << std::endl;
     if (_request == NULL) {
+        std::cout << "Error: request vacía" << std::endl;
         sendError(400);
         return;
     }
@@ -185,6 +186,7 @@ void Api::handleFileUpload() {
     std::vector<FormField> formFields = _request->getForm();
 
     if (formFields.empty()) {
+        std::cout << "Error: celdas vacías" << std::endl;
         sendError(400);
         return;
     }
@@ -219,7 +221,28 @@ void Api::handleFileUpload() {
                         "Content-Length: 0\r\n"
                         "\r\n";
     } else {
-        sendError(400);
+        std::stringstream htmlContent;
+
+        // Crear la estructura HTML
+        htmlContent << "<html><head><title>Form Data</title></head><body style='padding:2rem'>";
+        htmlContent << "<h1>Submitted Form Data</h1>";
+        htmlContent << "<ul>";
+
+        for (size_t i = 0; i < _request->getForm().size(); i++) {
+            htmlContent << "<li>";
+            htmlContent << "<b>Key:</b> " << _request->getForm()[i].key << "<br>";
+            htmlContent << "<b>Value:</b> " << _request->getForm()[i].value << "<br>";
+            htmlContent << "</li>";
+        }
+
+        htmlContent << "</ul>";
+        htmlContent << "</body></html>";
+    
+        std::string htmlString = htmlContent.str();
+
+
+        prepareHtmlResponse(htmlString);
+        std::cout << _httpResponse << std::endl;              
     }
 
     sendResponse(_client_socket);
@@ -257,6 +280,7 @@ void Api::handleFileDownload() {
 
     // std::cout << "File Path: " << filePath << std::endl;
     if (!inFile) {
+        std::cerr << "Error: Archivo no encontrado" << std::endl;
         sendError(404);
         return;
     }
@@ -474,6 +498,7 @@ void Api::handleDirectoryOrError(const std::string& normalizedUri) {
         listDirectory(normalizedUri);
         sendResponse(_client_socket);
     } else {
+        std::cerr << "Error: Ruta no encontrada" << std::endl;
         sendError(404);
     }
 }
