@@ -20,23 +20,34 @@ class Api
         Api(const Api& other);
         Api& operator=(const Api& other);
 
-        void    setRequest(Request *request);
-        void    setServer(Server *server);
-        
-        void    handleRequest(int);
+        void        setRequest(Request *request);
+        void        setServer(Server *server);
 
-        int     checkMethod();
-        void    createResponse();
-        void    sendError(int);
+        void        handleRequest(int);
 
-        void prepareRedirectResponse(const std::string& newLocation);
-        void prepareHtmlResponse(const std::string& htmlContent);
-        void prepareJsonResponse(const std::string& jsonContent);
-        void sendResponse(int client_socket);
+        int         checkMethod();
+        void        sendError(int);
 
-        bool    createDirectory(const std::string&);
-        void    handleFileUpload();
-        Route   findRoute();
+        void        prepareRedirectResponse(const std::string& newLocation);
+        void        prepareHtmlResponse(const std::string& htmlContent);
+        void        prepareJsonResponse(const std::string& jsonContent);
+        void        sendResponse(int client_socket);
+
+        void        handleFile();
+        void        handleFileUpload();
+        void        handleFileDownload();
+        void        handleFileDelete();
+        bool        createDirectory(const std::string&);
+        void        listDirectory(const std::string& directoryPath);
+
+        void        serveFile(const std::string& path);
+        void        serveJson(const std::string& path);
+        void        handleDirectoryOrError(const std::string& normalizedUri);
+        void        handleRoute(const Route& route);
+
+        Route       findRoute();
+        std::string generateUniqueFilename(const std::string& path, const std::string& filename);
+
 };
 
 

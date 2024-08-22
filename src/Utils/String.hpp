@@ -88,6 +88,8 @@ bool	isValidPath(const T str)
 template <typename T>
 T&	normalizePath(T& src)
 {
+	std::cout << src << std::endl;
+
 	if (src[0] == '/')
 		src.erase(0, 1);
 	if (src[src.size() - 1] == '/')
@@ -131,6 +133,23 @@ T	joinPaths(const T& str1, const T& str2)
 }
 
 template <typename T>
+std::string	joinPaths(const std::vector<T>& paths)
+{
+	std::string	result;
+
+	if (paths.size() == 1)
+		return paths[0];
+
+	for (size_t i = 0; i < paths.size(); i++)
+	{
+		result.append(paths[i]);
+		if (i < paths.size() - 1)
+			result.append("/");
+	}
+	return result;
+}
+
+template <typename T>
 bool	isValidIp(T str)
 {
 	int		num = -1;
@@ -163,6 +182,48 @@ bool	isValidIp(T str)
 	if (num < 0 || num > 255 || dots != 3)
 		return false;
 	return true;
+}
+
+template <typename T>
+bool	isValidFilename(T str)
+{
+	bool	has_text = false;
+	size_t	max = str.size();
+
+	std::cout << "str: " << str << std::endl;
+	std::cout << "max: " << max << std::endl;
+
+	for (size_t i = max - 1; i > 0; i--)
+	{
+		std::cout << str[i] << std::endl;
+		if (str[i] == '.' && has_text)
+			return true;
+		else if (str[i] == '.' && !has_text)
+			return false;
+		else
+			has_text = true;
+	}
+	return false;
+}
+
+template <typename T>
+std::string	getPathDirname(T src)
+{
+	std::vector<T>	words = splitChar(src, '/');
+
+	if (isValidFilename(words.back()))
+		words.pop_back();
+	return joinPaths(words);
+}
+
+template <typename T>
+std::string	getPathBasename(T src)
+{
+	std::vector<T>	words = splitChar(src, '/');
+
+	if (isValidFilename(words.back()))
+		return words.back();
+	return std::string();
 }
 
 template <typename T>

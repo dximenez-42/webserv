@@ -15,6 +15,8 @@
 #include <algorithm>
 #include <string>
 
+#include <dirent.h>
+
 #include <sys/stat.h>
 #include <fstream>
 #include <sstream>

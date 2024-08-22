@@ -2,13 +2,15 @@
 
 Request::Request()
 {
-	_method = "";
-	_uri = "";
-	_http_version = "";
-	_content_type = "";
-	_content_boundary = "";
-	_content_length = "";
-	_body = "";
+	_method.clear();
+	_normalizedUri.clear();
+	_basename.clear();
+	_http_version.clear();
+	_content_type.clear();
+	_content_boundary.clear();
+	_content_length.clear();
+	_form.clear();
+	_body.clear();
 
 	in_form = false;
 	in_body = false;
@@ -32,6 +34,10 @@ Request& Request::operator=(const Request& rhs)
 Request::~Request()
 {
 	_form.clear();
+<<<<<<< HEAD
+	std::cout << "Request deleted" << std::endl;
+=======
+>>>>>>> 0b2b29acd2e43031e3580fab11445801a1d46138
 }
 
 #include <stdio.h>
@@ -44,6 +50,7 @@ void	Request::fillRequest(std::string str) {
 	for (size_t i = 0; i < lines.size(); i++)
 	{
 		std::vector<std::string> words = splitSpaces(lines[i]);
+	    std::cout << lines[i] << std::endl;
 		
 		if (words.empty())
 			continue;
@@ -51,8 +58,22 @@ void	Request::fillRequest(std::string str) {
 		if (words[0] == "GET" || words[0] == "POST" || words[0] == "DELETE")
 		{
 			_method = words[0];
-			_uri = words[1];
-			_normalizedUri = normalizePath(words[1]);
+			std::string fullPath = words[1];
+
+			if (!fullPath.empty() && fullPath[0] == '/') {
+				fullPath.erase(0, 1);
+			}
+
+			size_t lastSlash = fullPath.find_last_of('/');
+
+			if (lastSlash != std::string::npos) {
+				_normalizedUri = fullPath.substr(0, lastSlash);
+				_basename = fullPath.substr(lastSlash + 1);
+			} else {
+				_normalizedUri = fullPath;
+				_basename.clear();
+			}
+
 			_http_version = words[2];
 		}
 		else if (words[0] == "Content-Type:" && _content_type.empty())
@@ -160,7 +181,8 @@ std::string Request::getHeaderValue(const std::string& key) const {
 void	Request::printRequest()
 {
 	std::cout << std::endl << std::endl << "Method: " << _method << std::endl;
-	std::cout << "URI: " << _uri << std::endl;
+	std::cout << "Dirname: " << _normalizedUri << std::endl;
+	std::cout << "Basename: " << _basename << std::endl;
 	std::cout << "HTTP Version: " << _http_version << std::endl;
 	std::cout << "Content-Type: " << _content_type << std::endl;
 	std::cout << "Content-Length: " << _content_length << std::endl << std::endl;
@@ -176,7 +198,7 @@ void	Request::printRequest()
 		}
 	}
 	std::cout << std::endl << std::endl << std::endl;
-
+	
 }
 
 std::string				Request::getMethod() const 
@@ -184,9 +206,9 @@ std::string				Request::getMethod() const
 	return _method;
 };
 
-std::string				Request::getUri() const
+std::string		Request::getBasename() const
 {
-	return _uri;
+	return _basename;
 };
 
 std::string				Request::getNormalizedUri() const
