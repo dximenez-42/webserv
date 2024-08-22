@@ -223,6 +223,8 @@ void	AConfig::parseRoutes(std::vector<std::string>& split, unsigned int line_num
 		return newError(line_number, "method " + split[0] + " is unsupported");
 	if (!::isValidRoutePath(split[1]))
 		return newError(line_number, "invalid route path");
+	if (normalizePath(split[2]) == "errors")
+		return newError(line_number, "route location cannot be \"errors\"");
 	if (!::isValidPath(::joinPaths(_servers.back()->getServerRoot(), split[2])) && !::isHttpRoute(split[2]))
 		return newError(line_number, "invalid route location");
 	Route	route;
