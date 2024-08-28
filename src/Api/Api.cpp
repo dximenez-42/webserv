@@ -212,6 +212,12 @@ void Api::handleFileUpload() {
             outFile.write(it->value.c_str(), it->value.size());
             outFile.close();
             fileUploaded = true;
+
+			if (endsWith(filePath, ".py") || endsWith(filePath, ".php"))
+			{
+				handleCGI(filePath);
+				return;
+			}
         }
     }
 
@@ -427,9 +433,12 @@ void Api::handleRoute(const Route& route) {
         serveJson(route.location);
     } else if (endsWith(route.location, ".html")) {
         serveFile(route.location);
-    } else if (endsWith(route.location, ".py") || endsWith(route.location, ".php")) {
-		// TODO handleCGI();
     } else {
+		if (!_request->getBasename().empty() && (_request->getBasename(), ".py") || endsWith(_request->getBasename(), ".php") && _request->getMethod() == "GET")
+		{
+			handleCGI(joinPaths(route.location, _request->getBasename()));
+			return;
+		}
         if (!_request->getBasename().empty() || (_request->getBasename().empty() && (_request->getMethod() == "POST" || _request->getMethod() == "DELETE"))) {
             handleFile();
         } else {
@@ -439,8 +448,27 @@ void Api::handleRoute(const Route& route) {
     sendResponse(_client_socket);
 }
 
-// void Api::handleCGI()
-// {
+void Api::handleCGI(std::string path)
+{
+	//check path exists
+	if (access(path.c_str(), F_OK) == -1)
+	{
+		sendError(404);
+		return;
+	}
+	// crear un pipe
+	// forkear
+	// si soy el hijo, redirigir stdout al pipe
+	// ejecutar el script
+	// si soy el padre, leer del pipe y convertirlo a string
+	// cerrar los pipes
+
+	 _httpResponse = "HTTP/1.1 200 OK\r\n"
+                    "Content-Type: text/html\r\n"
+                    "Content-Length: " + itos(path.length()) + "\r\n"
+                    "\r\n" + path;
+	sendResponse(_client_socket);
+}
 //     const char* script_path;
 //     const char* method;
 //     const char* query_string;

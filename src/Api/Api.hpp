@@ -33,7 +33,7 @@ class Api
         void        prepareJsonResponse(const std::string& jsonContent);
         void        sendResponse(int client_socket);
 
-        void        handleCGI();
+        void        handleCGI(std::string path);
 
         void        handleFile();
         void        handleFileUpload();
