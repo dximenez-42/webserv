@@ -315,7 +315,13 @@ void Api::handleFileDownload() {
 }
 
 void Api::handleFileDelete() {
-    std::string filePath = "www/" + _request->getNormalizedUri() + "/" + _request->getBasename();
+    Route route = findRoute();
+    if (route.path.empty())
+    {
+        sendError(404);
+        return;
+    }
+    std::string filePath = joinPaths(route.location, _request->getBasename());
 
     if (unlink(filePath.c_str()) != 0) {
         std::cerr << "Error filepath" << std::endl;
@@ -436,16 +442,13 @@ void Api::handleRoute(const Route& route) {
     } else if (endsWith(route.location, ".html")) {
         serveFile(route.location);
     } else if (endsWith(route.location, ".py") || endsWith(route.location, ".php")) {
-            //TODO handleCGI();
-    } else if (route.path == "uploads") {
+		// TODO handleCGI();
+    } else {
         if (!_request->getBasename().empty() || (_request->getBasename().empty() && (_request->getMethod() == "POST" || _request->getMethod() == "DELETE"))) {
             handleFile();
         } else {
             listDirectory(route.path);
         }
-    } else {
-        std::cerr << "Error: Ruta no especificada " << route.path << std::endl;
-        sendError(404);
     }
     sendResponse(_client_socket);
 }
