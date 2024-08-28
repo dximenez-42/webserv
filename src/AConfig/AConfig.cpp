@@ -53,7 +53,7 @@ void	AConfig::parseHttp(std::vector<std::string>& split, unsigned int line_numbe
 	if (split[0] == "access_log" && _access_log.empty())
 	{
 		if (!isValidPath(split[1]) && split[1] != "/dev/stdout" && split[1] != "/dev/stderr" && split[1] != "/dev/null")
-			return newError(line_number, "invalid access path");
+			return newError(line_number, "invalid access_log path");
 		_access_log = split[1];
 	}
 	else if (split[0] == "access_log" && !_access_log.empty())
@@ -61,7 +61,7 @@ void	AConfig::parseHttp(std::vector<std::string>& split, unsigned int line_numbe
 	else if (split[0] == "error_log" && _error_log.empty())
 	{
 		if (!isValidPath(split[1]) && split[1] != "/dev/stdout" && split[1] != "/dev/stderr" && split[1] != "/dev/null")
-			return newError(line_number, "invalid error path");
+			return newError(line_number, "invalid error_log path");
 		_error_log = split[1];
 	}
 	else if (split[0] == "error_log" && !_error_log.empty())
@@ -142,9 +142,9 @@ void	AConfig::parseServer(std::vector<std::string>& split, unsigned int line_num
 	{
 		if (!isValidPath(split[1]))
 			return newError(line_number, "invalid root path");
-		if (split[1][split[1].length() - 1] == '/')
-			split[1].erase(split[1].length() - 1, split[1].length());
-		server->setServerRoot(split[1]);
+		// if (split[1][split[1].length() - 1] == '/')
+		// 	split[1].erase(split[1].length() - 1, split[1].length());
+		server->setServerRoot(normalizePath(split[1]));
 	}
 	else if (split[0] == "root" && !server->getServerRoot().empty())
 		return newError(line_number, "root already defined");
@@ -156,34 +156,18 @@ void	AConfig::parseServer(std::vector<std::string>& split, unsigned int line_num
 	}
 	else if (split[0] == "limit_body_size" && server->getLimitBodySize() != 0)
 		return newError(line_number, "limit_body_size already defined");
+	else if (split[0] == "errors" && server->getErrorsDir().empty() && !server->getServerRoot().empty())
+	{
+		if (!isValidPath(joinPaths(server->getServerRoot(), normalizePath(split[1]))))
+			return newError(line_number, "invalid errors path");
+		server->setErrorsDir(joinPaths(server->getServerRoot(), normalizePath(split[1])));
+	}
+	else if (split[0] == "errors" && server->getServerRoot().empty())
+		return newError(line_number, "root must be defined before errors");
+	else if (split[0] == "errors" && !server->getErrorsDir().empty())
+		return newError(line_number, "errors already defined");
 	else
 		return newError(line_number, "invalid field \"" + split[0] + "\" in server block");
-}
-
-void	AConfig::parseErrors(std::vector<std::string>& split, unsigned int line_number)
-{
-	if (split.size() != 2)
-		return newError(line_number, "invalid line in errors block");
-	if (_open_blocks.size() != 3 || _open_blocks.at(0) != HTTP || _open_blocks.at(1) != SERVER || _open_blocks.at(2) != ERRORS)
-	{
-		_open_blocks.push_back(BAD);
-		return newError(line_number, "invalid location of errors block");
-	}
-	if (_servers.back()->getServerRoot().empty())
-	{
-		_open_blocks.push_back(BAD);
-		return newError(line_number, "root must be defined before errors");
-	}
-
-	if (!isValidPath(joinPaths<std::string>(_servers.back()->getServerRoot(), split[1])))
-		return newError(line_number, "invalid error path");
-	ErrorPage	error;
-	error.code = split[0];
-	error.path = joinPaths<std::string>(_servers.back()->getServerRoot(), normalizePath(split[1]));
-
-	if (checkErrorExists(error))
-		return newError(line_number, "error code " + error.code + " already defined");
-	_servers.back()->addErrorPage(error);
 }
 
 void	AConfig::parseMethods(std::vector<std::string>& split, unsigned int line_number)
@@ -244,7 +228,6 @@ void	AConfig::parseLine(std::string line, unsigned int line_number)
 	std::vector<std::string>	split = splitSpaces(line);
 	static bool	http_block = false;
 	static bool	server_block = false;
-	static bool	errors_block = false;
 	static bool	methods_block = false;
 	static bool	routes_block = false;
 
@@ -276,18 +259,6 @@ void	AConfig::parseLine(std::string line, unsigned int line_number)
 			_open_blocks.push_back(SERVER);
 			_open_blocks.push_back(BAD);
 			return newError(line_number, "server block already defined");
-		}
-		else if (split[0] == "errors" && !errors_block)
-		{
-			errors_block = true;
-			_open_blocks.push_back(ERRORS);
-			_errors_location = line_number;
-		}
-		else if (split[0] == "errors" && errors_block)
-		{
-			_open_blocks.push_back(ERRORS);
-			_open_blocks.push_back(BAD);
-			return newError(line_number, "errors block already defined");
 		}
 		else if (split[0] == "methods" && !methods_block)
 		{
@@ -327,9 +298,6 @@ void	AConfig::parseLine(std::string line, unsigned int line_number)
 		case SERVER:
 			server_block = false;
 			break;
-		case ERRORS:
-			errors_block = false;
-			break;
 		case METHODS:
 			methods_block = false;
 			break;
@@ -351,8 +319,6 @@ void	AConfig::parseLine(std::string line, unsigned int line_number)
 			parseHttp(split, line_number);
 		else if (_open_blocks.back() == SERVER)
 			parseServer(split, line_number);
-		else if (_open_blocks.back() == ERRORS)
-			parseErrors(split, line_number);
 		else if (_open_blocks.back() == METHODS)
 			parseMethods(split, line_number);
 		else if (_open_blocks.back() == ROUTES)
@@ -411,8 +377,6 @@ void	AConfig::checkConfig()
 				newError(_http_location, "http block not closed");
 			else if (_open_blocks[i] == SERVER)
 				newError(_server_location, "server block not closed");
-			else if (_open_blocks[i] == ERRORS)
-				newError(_errors_location, "errors block not closed");
 			else if (_open_blocks[i] == METHODS)
 				newError(_methods_location, "methods block not closed");
 			else if (_open_blocks[i] == ROUTES)
@@ -436,16 +400,6 @@ void	AConfig::checkConfig()
 		throw ConfigErrorException();
 }
 
-
-bool	AConfig::checkErrorExists(ErrorPage& error)
-{
-	for (size_t i = 0; i < _servers.back()->getErrorPages().size(); i++)
-	{
-		if (_servers.back()->getErrorPages()[i].code == error.code)
-			return true;
-	}
-	return false;
-}
 
 bool	AConfig::checkMethodExists(std::string& method)
 {
@@ -490,16 +444,8 @@ void	AConfig::printServers()
 		std::cout << "server_dir_listing:\t" << _servers[i]->getServerDirListing() << std::endl;
 		std::cout << "server_root:\t\t" << _servers[i]->getServerRoot() << std::endl;
 		std::cout << "limit_body_size:\t" << _servers[i]->getLimitBodySize() << std::endl;
+		std::cout << "errors_dir:\t\t" << _servers[i]->getErrorsDir() << std::endl;
 
-		if (!_servers[i]->getErrorPages().empty())
-		{
-			std::cout << "error_pages:" << std::endl;
-			for (size_t j = 0; j < _servers[i]->getErrorPages().size(); j++)
-			{
-				std::cout	<< "\terror_code: \"" << _servers[i]->getErrorPages()[j].code
-							<< "\", error_page: \"" << _servers[i]->getErrorPages()[j].path << "\"" << std::endl;
-			}
-		}
 		if (!_servers[i]->getMethods().empty())
 		{
 			std::cout << "methods:" << std::endl;

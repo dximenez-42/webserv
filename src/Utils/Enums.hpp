@@ -7,7 +7,6 @@ enum OpenCfg
 	BAD,
 	HTTP,
 	SERVER,
-	ERRORS,
 	METHODS,
 	ROUTES
 };

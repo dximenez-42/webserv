@@ -27,8 +27,6 @@ Server &Server::operator=(const Server &rhs)
 
 Server::~Server()
 {
-	if (!_error_pages.empty())
-		_error_pages.clear();
 	if (!_methods.empty())
 		_methods.clear();
 	if (!_routes.empty())
@@ -71,9 +69,9 @@ int				Server::getLimitBodySize() const
 	return (_limit_body_size);
 }
 
-std::vector<ErrorPage>		Server::getErrorPages() const
+std::string		Server::getErrorsDir() const
 {
-	return (_error_pages);
+	return (_errors_dir);
 }
 
 std::vector<std::string>	Server::getMethods() const
@@ -136,9 +134,9 @@ void	Server::setLimitBodySize(int limit_body_size)
 	_limit_body_size = limit_body_size;
 }
 
-void	Server::addErrorPage(ErrorPage error)
+void	Server::setErrorsDir(std::string dir)
 {
-	_error_pages.push_back(error);
+	_errors_dir = dir;
 }
 
 void	Server::addMethod(std::string method)

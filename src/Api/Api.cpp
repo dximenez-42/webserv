@@ -1,10 +1,21 @@
 #include "Api.hpp"
 
 Api::Api() {
-    _errorPath = "www/errors";      //TODO Cambiar a la ruta del config
+    _request = NULL;
+    _server = NULL;
+    _httpResponse = "";
+    _errorPath = "";
+    _client_socket = -1;
 }
 
-Api::~Api() {}
+Api::~Api() {
+    if (_request != NULL) {
+        delete _request;
+    }
+    if (_server != NULL) {
+        delete _server;
+    }
+}
 
 Api::Api(const Api& other) : _request(other._request), _server(other._server), _httpResponse(other._httpResponse), _errorPath(other._errorPath), _client_socket(other._client_socket) {}
 
@@ -23,12 +34,15 @@ Api& Api::operator=(const Api& other) {
 
 void    Api::setRequest(Request *request)
 {
+    if (_request != NULL)
+        delete _request;
     _request = request;
 }
 
 void    Api::setServer(Server *server)
 {
     _server = server;
+    _errorPath = _server->getErrorsDir();
 }
 
 Route Api::findRoute()
@@ -422,7 +436,7 @@ void Api::handleRoute(const Route& route) {
     } else if (endsWith(route.location, ".html")) {
         serveFile(route.location);
     } else if (endsWith(route.location, ".py") || endsWith(route.location, ".php")) {
-
+            //TODO handleCGI();
     } else if (route.path == "uploads") {
         if (!_request->getBasename().empty() || (_request->getBasename().empty() && (_request->getMethod() == "POST" || _request->getMethod() == "DELETE"))) {
             handleFile();

@@ -29,11 +29,9 @@ class AConfig
 
 		void	parseHttp(std::vector<std::string>& split, unsigned int line_number);
 		void	parseServer(std::vector<std::string>& split, unsigned int line_number);
-		void	parseErrors(std::vector<std::string>& split, unsigned int line_number);
 		void	parseMethods(std::vector<std::string>& split, unsigned int line_number);
 		void	parseRoutes(std::vector<std::string>& split, unsigned int line_number);
 
-		bool	checkErrorExists(ErrorPage& error);
 		bool	checkMethodExists(std::string& method);
 		bool	checkRouteExists(Route& route);
 
