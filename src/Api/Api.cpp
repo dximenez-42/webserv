@@ -434,7 +434,7 @@ void Api::handleRoute(const Route& route) {
     } else if (endsWith(route.location, ".html")) {
         serveFile(route.location);
     } else {
-		if (!_request->getBasename().empty() && (_request->getBasename(), ".py") || endsWith(_request->getBasename(), ".php") && _request->getMethod() == "GET")
+		if (!_request->getBasename().empty() && endsWith(_request->getBasename(), ".py") || endsWith(_request->getBasename(), ".php") && _request->getMethod() == "GET")
 		{
 			handleCGI(joinPaths(route.location, _request->getBasename()));
 			return;
