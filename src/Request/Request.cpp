@@ -56,6 +56,9 @@ void	Request::fillRequest(std::string str) {
 			_method = words[0];
 			std::string fullPath = words[1];
 
+			_query_string = fullPath.substr(fullPath.find("?") + 1);
+			fullPath = fullPath.substr(0, fullPath.find("?"));
+
 			if (!fullPath.empty() && fullPath[0] == '/') {
 				fullPath.erase(0, 1);
 			}
@@ -181,6 +184,7 @@ std::string Request::getHeaderValue(const std::string& key) const {
 void	Request::printRequest()
 {
 	std::cout << std::endl << std::endl << "Method: " << _method << std::endl;
+	std::cout << "Query String: " << _query_string << std::endl;
 	std::cout << "Dirname: " << _normalizedUri << std::endl;
 	std::cout << "Basename: " << _basename << std::endl;
 	std::cout << "HTTP Version: " << _http_version << std::endl;
@@ -214,6 +218,11 @@ std::string		Request::getBasename() const
 std::string				Request::getNormalizedUri() const
 {
 	return _normalizedUri;
+};
+
+std::string				Request::getQueryString() const
+{
+	return _query_string;
 };
 
 std::string				Request::getHttpVersion() const

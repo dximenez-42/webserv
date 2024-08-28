@@ -11,6 +11,7 @@ class Request {
 		std::string _method;
 		std::string _normalizedUri;
 		std::string _basename;
+		std::string	_query_string;
 
 		std::string _http_version;
 		std::string _content_type;
@@ -35,6 +36,7 @@ class Request {
 		std::string getMethod() const;
 		std::string getBasename() const;
 		std::string getNormalizedUri() const;
+		std::string getQueryString() const;
 		std::string getHttpVersion() const;
 		std::string getContentType() const;
 		std::string getContentLength() const;
