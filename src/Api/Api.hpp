@@ -39,7 +39,6 @@ class Api
         void        handleFileUpload();
         void        handleFileDownload();
         void        handleFileDelete();
-        bool        createDirectory(const std::string&);
         void        listDirectory(const std::string& directoryPath);
 
         void        serveFile(const std::string& path);

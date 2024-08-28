@@ -140,17 +140,6 @@ int  Api::checkMethod()
     return -1;
 }
 
-bool Api::createDirectory(const std::string& path) {
-    struct stat st = { .st_dev = 0 };
-
-    if (stat(path.c_str(), &st) == -1) {
-        if (mkdir(path.c_str(), 0700) != 0) {
-            return false;
-        }
-    }
-    return true;
-}
-
 std::string Api::generateUniqueFilename(const std::string& path, const std::string& filename) {
     std::string uniqueFilename = filename;
     std::string filePath = path + "/" + uniqueFilename;
@@ -205,17 +194,14 @@ void Api::handleFileUpload() {
         return;
     }
 
-    if (!createDirectory("www/uploads")) {
-        sendError(500);
-        return;
-    }
-
     bool fileUploaded = false;
+
+	Route route = findRoute();
 
     for (std::vector<FormField>::iterator it = formFields.begin(); it != formFields.end(); ++it) {
         if (!it->filename.empty()) {
-            std::string uniqueFilename = generateUniqueFilename("www/uploads", it->filename);
-            std::string filePath = "www/uploads/" + uniqueFilename;
+            std::string uniqueFilename = generateUniqueFilename(route.location, it->filename);
+            std::string filePath = joinPaths(route.location, uniqueFilename);
 
             std::ofstream outFile(filePath.c_str(), std::ios::binary);
             if (!outFile) {
