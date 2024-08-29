@@ -57,7 +57,6 @@ void Webserv::runServers()
 
 		int activity = select(max_sd + 1, &readfds, NULL, NULL, NULL);
 		if ((activity < 0) && (errno != EINTR)) {
-			std::cerr << "Error en select" << std::endl;
 			exit(EXIT_FAILURE);
 		}
 

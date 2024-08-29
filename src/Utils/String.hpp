@@ -190,7 +190,6 @@ bool	isValidFilename(T str)
 
 	for (size_t i = max - 1; i > 0; i--)
 	{
-		std::cout << str[i] << std::endl;
 		if (str[i] == '.' && has_text)
 			return true;
 		else if (str[i] == '.' && !has_text)

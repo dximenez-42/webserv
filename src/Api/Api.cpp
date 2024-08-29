@@ -282,7 +282,6 @@ void Api::handleFileDownload() {
     std::ifstream inFile(filePath.c_str(), std::ios::binary);
 
     if (!inFile) {
-        std::cerr << "Error: Archivo no encontrado" << std::endl;
         sendError(404);
         return;
     }
@@ -312,7 +311,6 @@ void Api::handleFileDelete() {
     std::string filePath = joinPaths(route.location, _request->getBasename());
 
     if (unlink(filePath.c_str()) != 0) {
-        std::cerr << "Error filepath" << std::endl;
         sendError(404);
     } else {
         _httpResponse = "HTTP/1.1 200 OK\r\n"
@@ -522,7 +520,6 @@ void Api::handleDirectoryOrError(const std::string& normalizedUri) {
         listDirectory(normalizedUri);
         sendResponse(_client_socket);
     } else {
-        std::cerr << "Error: Ruta no encontrada" << std::endl;
         sendError(404);
     }
 }
@@ -533,7 +530,6 @@ void Api::serveFile(const std::string& path) {
     if (!content.empty()) {
         prepareHtmlResponse(content);
     } else {
-        std::cerr << "Error: Archivo no encontrado o vacío - " << path << std::endl;
         sendError(404);
     }
     sendResponse(_client_socket);
@@ -544,7 +540,6 @@ void Api::serveJson(const std::string& path) {
     if (!jsonContent.empty()) {
         prepareJsonResponse(jsonContent);
     } else {
-        std::cerr << "Error: Archivo JSON no encontrado o vacío - " << path << std::endl;
         sendError(404);
     }
     sendResponse(_client_socket);

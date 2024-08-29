@@ -161,7 +161,6 @@ int Server::setUp()
 {
     _server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (_server_fd == 0) {
-        std::cerr << "Socket failed" << std::endl;
         return -1;
     }
 
@@ -170,7 +169,6 @@ int Server::setUp()
     _address.sin_port = htons(_server_port);
 
     if (bind(_server_fd, (struct sockaddr*)&_address, sizeof(_address)) < 0) {
-        std::cerr << "Bind failed" << std::endl;
         close(_server_fd);
         return -1;
     }
@@ -180,7 +178,6 @@ int Server::setUp()
 
 int Server::listen() {
     if (::listen(_server_fd, 3) < 0) {
-        std::cerr << "Listen failed" << std::endl;
         close(_server_fd);
         return -1;
     }
@@ -194,7 +191,6 @@ int Server::accept() {
 	
     new_socket = ::accept(_server_fd, (struct sockaddr*)&_address, (socklen_t*)&addrlen);
     if (new_socket < 0) {
-        std::cerr << "Accept failed" << std::endl;
         close(_server_fd);
 		exit(EXIT_FAILURE);
     }

@@ -1,6 +1,6 @@
 NAME		= webserv
 CXX			= c++
-CXXFLAGS	= -g3 -std=c++98 -Wall -Wextra -Werror -fsanitize=address
+CXXFLAGS	= -g3 -std=c++98 -Wall -Wextra -Werror #-fsanitize=address
 
 SRCS		=	main.cpp\
 				src/Webserv/Webserv.cpp\
