@@ -39,7 +39,8 @@ Request::~Request()
 #include <stdio.h>
 
 void	Request::fillRequest(std::string str) {
-	 std::cout << std::endl << "Request: \n" << str << std::endl << std::endl;
+	// TODO remove this
+	//  std::cout << std::endl << "Request: \n" << str << std::endl << std::endl;
 
 	std::vector<std::string>	lines = splitChar(str, '\n');
 
