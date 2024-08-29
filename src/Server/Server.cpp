@@ -31,7 +31,8 @@ Server::~Server()
 		_methods.clear();
 	if (!_routes.empty())
 		_routes.clear();
-	std::cout << "Server destruct" << std::endl;
+	// TODO remove this
+	// std::cout << "Server destruct" << std::endl;
 }
 
 int				Server::getServerPort() const
@@ -151,7 +152,8 @@ void	Server::addRoute(Route route)
 
 void Server::pushClientSocket(int clientSocket) {
 	_client_sockets.push_back(clientSocket);
-	std::cout << "Socket " << clientSocket << " pushed" << std::endl;
+	// TODO remove this
+	// std::cout << "Socket " << clientSocket << " pushed" << std::endl;
 }
 
 bool Server::hasClientSocket(int client_socket) const {
@@ -176,7 +178,8 @@ int Server::setUp()
         close(_server_fd);
         return -1;
     }
-	std::cout << "Server " << _server_name << " setted up" << std::endl;
+	// TODO remove this
+	// std::cout << "Server " << _server_name << " setted up" << std::endl;
 	return 0;
 }
 
@@ -187,8 +190,8 @@ int Server::listen() {
         close(_server_fd);
         return -1;
     }
-
-    std::cout << "Server " << _server_name << " listening on port " << _server_port << std::endl;
+	// TODO remove this
+    // std::cout << "Server " << _server_name << " listening on port " << _server_port << std::endl;
 	return 0;
 }
 
@@ -196,7 +199,8 @@ int Server::listen() {
 int Server::accept() {
 	int new_socket;
     int addrlen = sizeof(_address);
-	std::cout << htons(_address.sin_port) << std::endl;
+	// TODO remove this
+	// std::cout << htons(_address.sin_port) << std::endl;
 	
     new_socket = ::accept(_server_fd, (struct sockaddr*)&_address, (socklen_t*)&addrlen);
     if (new_socket < 0) {
@@ -204,8 +208,9 @@ int Server::accept() {
         close(_server_fd);
 		exit(EXIT_FAILURE);
     }
-	else
-		std::cout << "Connection in " << _server_name << " on port " << _server_port << " accepted" << std::endl;
+	// else
+	// TODO remove this
+		// std::cout << "Connection in " << _server_name << " on port " << _server_port << " accepted" << std::endl;
 
 	return new_socket;
 }
@@ -213,11 +218,12 @@ int Server::accept() {
 int Server::read() {
 	char buffer[BUFFER_SIZE] = {0};
 
-	int valread = ::read(_server_socket, buffer, BUFFER_SIZE);
-	if (valread > 0)
-    	std::cout << "Received message: " << buffer << std::endl;
-	else 
-    	std::cout << "Empty message" << std::endl;
+	::read(_server_socket, buffer, BUFFER_SIZE);
+	// TODO remove this
+	// if (valread > 0)
+    // 	std::cout << "Received message: " << buffer << std::endl;
+	// else 
+    // 	std::cout << "Empty message" << std::endl;
 	return 0;
 }
 
@@ -225,6 +231,7 @@ int Server::send() {
     const char* hello = "Hello from server";
 
 	::send(_server_socket, hello, strlen(hello), 0);
-    std::cout << "Hello message sent" << std::endl;
+	// TODO remove this
+    // std::cout << "Hello message sent" << std::endl;
 	return 0;
 }

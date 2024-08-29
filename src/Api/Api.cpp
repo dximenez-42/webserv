@@ -179,9 +179,11 @@ void Api::handleFile() {
 }
 
 void Api::handleFileUpload() {
-    std::cout << "Entra en handle upload" << std::endl;
+    // TODO remove this
+    // std::cout << "Entra en handle upload" << std::endl;
     if (_request == NULL) {
-        std::cout << "Error: request vacía" << std::endl;
+        // TODO remove this
+        // std::cout << "Error: request vacía" << std::endl;
         sendError(400);
         return;
     }
@@ -189,7 +191,8 @@ void Api::handleFileUpload() {
     std::vector<FormField> formFields = _request->getForm();
 
     if (formFields.empty()) {
-        std::cout << "Error: celdas vacías" << std::endl;
+        // TODO remove this
+        // std::cout << "Error: celdas vacías" << std::endl;
         sendError(400);
         return;
     }
@@ -248,7 +251,8 @@ void Api::handleFileUpload() {
 
 
         prepareHtmlResponse(htmlString);
-        std::cout << _httpResponse << std::endl;              
+        // TODO remove this
+        // std::cout << _httpResponse << std::endl;
     }
 
     sendResponse(_client_socket);
@@ -284,6 +288,7 @@ void Api::handleFileDownload() {
     std::string filePath = "www/" + _request->getNormalizedUri() + "/" + _request->getBasename();
     std::ifstream inFile(filePath.c_str(), std::ios::binary);
 
+    // TODO remove this
     // std::cout << "File Path: " << filePath << std::endl;
     if (!inFile) {
         std::cerr << "Error: Archivo no encontrado" << std::endl;
@@ -365,11 +370,13 @@ void    Api::sendResponse(int client_socket)
 
 
 void Api::listDirectory(const std::string& directoryName) {
-    std::cout << std::endl << "Dirlisting: " << _server->getServerDirListing() << std::endl;
+    // TODO remove this
+    // std::cout << std::endl << "Dirlisting: " << _server->getServerDirListing() << std::endl;
     if (_server->getServerDirListing() == 0)
     {
         sendError(404);
-        std::cout << "No debe ejecutar DirList!" << std::endl;
+        // TODO remove this
+        // std::cout << "No debe ejecutar DirList!" << std::endl;
         return;
     }
     std::string directoryPath = "www/" + directoryName;
@@ -408,7 +415,8 @@ void Api::handleRequest(int client_socket) {
     }
 
     if (normalizedUri.find("errors") == 0 && !_request->getBasename().empty()) {
-        std::cout << "Entra y deberia devolver el archivo" << std::endl;
+        // TODO remove this
+        // std::cout << "Entra y deberia devolver el archivo" << std::endl;
         serveFile("www/" + normalizedUri + "/" + _request->getBasename());
         return;
     }
