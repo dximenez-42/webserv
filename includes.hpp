@@ -14,6 +14,7 @@
 #include <vector>
 #include <algorithm>
 #include <string>
+#include <sys/wait.h>
 
 #include <dirent.h>
 

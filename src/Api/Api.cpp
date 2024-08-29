@@ -450,72 +450,73 @@ void Api::handleRoute(const Route& route) {
 
 void Api::handleCGI(std::string path)
 {
-	//check path exists
+    std::string script_path = path;
+    std::string method = _request->getMethod();
+    std::string query_string = _request->getQueryString();
+    std::string response;
+
 	if (access(path.c_str(), F_OK) == -1)
 	{
 		sendError(404);
 		return;
 	}
-	// crear un pipe
-	// forkear
-	// si soy el hijo, redirigir stdout al pipe
-	// ejecutar el script
-	// si soy el padre, leer del pipe y convertirlo a string
-	// cerrar los pipes
 
-	 _httpResponse = "HTTP/1.1 200 OK\r\n"
-                    "Content-Type: text/html\r\n"
-                    "Content-Length: " + itos(path.length()) + "\r\n"
-                    "\r\n" + path;
-	sendResponse(_client_socket);
+    int pipe_fd[2];
+    pipe(pipe_fd);
+
+    pid_t pid = fork();
+    if (pid == -1)
+    {
+        perror("fork failed");
+        exit(EXIT_FAILURE);
+    }
+
+    if (pid == 0)
+    {
+        dup2(pipe_fd[1], STDOUT_FILENO);
+        close(pipe_fd[0]);
+
+        std::vector<std::string> env_vars;
+        env_vars.push_back("REQUEST_METHOD=" + method);
+        env_vars.push_back("QUERY_STRING=" + query_string);
+        env_vars.push_back("SCRIPT_NAME=" + script_path);
+
+        std::vector<char*> environ;
+        for (size_t i = 0; i < env_vars.size(); i++)
+            environ.push_back(const_cast<char*>(env_vars[i].c_str()));
+        environ.push_back(0);
+
+        if (endsWith(script_path,".py"))
+        {
+            char* const args[] = {strdup("/usr/bin/python3"), strdup(script_path.c_str()), 0};
+            execve("/usr/bin/python3", args, environ.data());
+        }
+        else if (endsWith(script_path, ".php"))
+        {
+            char* const args[] = {strdup("/usr/bin/php"), strdup(script_path.c_str()), 0};
+            execve("/usr/bin/php", args, environ.data());
+        }
+    }
+    else
+    {
+	    close(pipe_fd[1]);
+        waitpid(pid, 0, 0);
+
+        char buffer[4096];
+        ssize_t nbytes;
+        while ((nbytes = read(pipe_fd[0], buffer, sizeof(buffer))) > 0) {
+            response.append(buffer, nbytes);
+        }
+
+        close(pipe_fd[0]);
+
+        _httpResponse = "HTTP/1.1 200 OK\r\n"
+                        "Content-Type: text/html\r\n"
+                        "Content-Length: " + itos(response.length()) + "\r\n"
+                        "\r\n" + response;
+        sendResponse(_client_socket);
+    }
 }
-//     const char* script_path;
-//     const char* method;
-//     const char* query_string;
-//     int client_fd;
-
-//     int pipe_fd[2];
-//     pipe(pipe_fd); // Create a pipe
-
-//     pid_t pid = fork();
-
-//     if (pid == 0) { // Child process
-//         // Redirect stdout to the write end of the pipe
-//         dup2(pipe_fd[1], STDOUT_FILENO);
-//         close(pipe_fd[0]);
-
-//         // Set environment variables
-//         setenv("REQUEST_METHOD", method, 1);
-//         setenv("QUERY_STRING", query_string, 1);
-//         setenv("SCRIPT_NAME", script_path, 1);
-
-//         // Execute the CGI script
-//         char* const args[] = {strdup(script_path), nullptr};
-//         execve(script_path, args, environ);
-
-//         // If execve fails
-//         perror("execve failed");
-//         exit(EXIT_FAILURE);
-//     } else if (pid > 0) { // Parent process
-//         close(pipe_fd[1]); // Close write end of the pipe in parent
-
-//         // Wait for the child process to finish
-//         waitpid(pid, nullptr, 0);
-
-//         // Read the CGI script output from the pipe
-//         char buffer[4096];
-//         ssize_t nbytes;
-//         while ((nbytes = read(pipe_fd[0], buffer, sizeof(buffer))) > 0) {
-//             // Send the output to the client
-//             write(client_fd, buffer, nbytes);
-//         }
-
-//         close(pipe_fd[0]); // Close read end of the pipe in parent
-//     } else {
-//         perror("fork failed");
-//         exit(EXIT_FAILURE);
-//     }
-// }
 
 void Api::handleDirectoryOrError(const std::string& normalizedUri) {
     std::string directoryPath = "www/" + normalizedUri;
