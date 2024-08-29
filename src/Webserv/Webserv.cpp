@@ -79,7 +79,8 @@ void Webserv::runServers()
 
 				if (valread <= 0) {
 					close(client_socket);
-					std::cout << "Cliente desconectado" << std::endl;
+					// TODO remove this
+					// std::cout << "Cliente desconectado" << std::endl;
 					it = _client_sockets.erase(it);
 				} else {
 					_api.handleRequest(client_socket);
