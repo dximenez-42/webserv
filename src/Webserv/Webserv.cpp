@@ -67,8 +67,6 @@ void Webserv::runServers()
 				int new_socket = server->accept();
 				_client_sockets.push_back(new_socket);
 				_api.setServer(server);
-
-				// std::cout << "Nueva conexión aceptada en puerto: " << server->getServerPort() << std::endl;
 			}
 		}
 
@@ -79,8 +77,6 @@ void Webserv::runServers()
 
 				if (valread <= 0) {
 					close(client_socket);
-					// TODO remove this
-					// std::cout << "Cliente desconectado" << std::endl;
 					it = _client_sockets.erase(it);
 				} else {
 					_api.handleRequest(client_socket);
@@ -105,8 +101,6 @@ Server* Webserv::findServer(int client_socket) {
 
 
 int Webserv::readRequest(int client_socket) {
-    // std::cout << std::endl << "Se lee la request" << std::endl;
-
     std::vector<char> requestData;
     char buffer[BUFFER_SIZE];
     ssize_t valread = 0;
@@ -146,15 +140,6 @@ int Webserv::readRequest(int client_socket) {
     std::string requestString(requestData.begin(), requestData.end());
     _request = new Request();
     _request->fillRequest(requestString);
-
-	// TODO remove this
-	// std::cout << "Method: " << _request->getMethod() << std::endl;
-	// for (size_t i = 0; i < _request->getForm().size(); i++)
-	// {
-	// 	std::cout << "Key: " << _request->getForm()[i].key << std::endl;
-	// 	std::cout << "Value: " << _request->getForm()[i].value << std::endl;
-	// 	std::cout << "Filename: " << _request->getForm()[i].filename << std::endl;
-	// }
     _api.setRequest(_request);
 
     return (valread);

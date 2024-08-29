@@ -142,8 +142,6 @@ void	AConfig::parseServer(std::vector<std::string>& split, unsigned int line_num
 	{
 		if (!isValidPath(split[1]))
 			return newError(line_number, "invalid root path");
-		// if (split[1][split[1].length() - 1] == '/')
-		// 	split[1].erase(split[1].length() - 1, split[1].length());
 		server->setServerRoot(normalizePath(split[1]));
 	}
 	else if (split[0] == "root" && !server->getServerRoot().empty())

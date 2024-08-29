@@ -39,16 +39,11 @@ Request::~Request()
 #include <stdio.h>
 
 void	Request::fillRequest(std::string str) {
-	// TODO remove this
-	//  std::cout << std::endl << "Request: \n" << str << std::endl << std::endl;
-
 	std::vector<std::string>	lines = splitChar(str, '\n');
 
 	for (size_t i = 0; i < lines.size(); i++)
 	{
-		std::vector<std::string> words = splitSpaces(lines[i]);
-	    // std::cout << lines[i] << std::endl; // SUMAMA
-		
+		std::vector<std::string> words = splitSpaces(lines[i]);		
 		if (words.empty())
 			continue;
 
@@ -169,8 +164,6 @@ void	Request::fillRequest(std::string str) {
 		words.clear();
 	}
 	lines.clear();
-
-	// std::cout << "llega" << std::endl;
 }
 
 std::string Request::getBoundary() const {
