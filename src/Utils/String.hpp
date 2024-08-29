@@ -226,18 +226,19 @@ int	stoi(T str, int base = 10)
 {
 	int	result = 0;
 	int	sign = 1;
-	int	i = 0;
+	size_t	i = 0;
 
 	if (str[0] == '-')
 	{
 		sign = -1;
 		i++;
 	}
-	for (; i < str.size(); i++)
+	while (i < str.size())
 	{
 		if (str[i] < '0' || str[i] > '9')
 			return 0;
 		result = result * base + str[i] - '0';
+		i++;
 	}
 	return result * sign;
 }
