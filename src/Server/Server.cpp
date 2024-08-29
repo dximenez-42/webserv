@@ -170,6 +170,7 @@ int Server::setUp()
 
     if (bind(_server_fd, (struct sockaddr*)&_address, sizeof(_address)) < 0) {
         close(_server_fd);
+		std::cout << "Server couldn't listen on that ip and/or port" << std::endl;
         return -1;
     }
 	return 0;

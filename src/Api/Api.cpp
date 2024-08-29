@@ -223,6 +223,7 @@ void Api::handleFileUpload() {
                         "Location: ./uploads \r\n"
                         "Content-Length: 0\r\n"
                         "\r\n";
+        listDirectory(route.location);
     } else {
         std::stringstream htmlContent;
 
@@ -394,12 +395,7 @@ void Api::handleRequest(int client_socket) {
     std::string normalizedUri = _request->getNormalizedUri();
 
     if (normalizedUri.empty() || normalizedUri == "index.html" || normalizedUri == "index.htm") {
-        serveFile("www/index.html");
-        return;
-    }
-
-    if (normalizedUri.find("errors") == 0 && !_request->getBasename().empty()) {
-        serveFile(_server->getServerRoot() + '/' + normalizedUri + "/" + _request->getBasename());
+        serveFile(_server->getServerRoot() + "/index.html");
         return;
     }
 
@@ -429,11 +425,7 @@ void Api::handleRoute(const Route& route) {
 			handleCGI(joinPaths(route.location, _request->getBasename()));
 			return;
 		}
-        if (!_request->getBasename().empty()) {
-            handleFile();
-        } else {
-            listDirectory(route.location);
-        }
+        handleFile();
     }
     sendResponse(_client_socket);
 }
