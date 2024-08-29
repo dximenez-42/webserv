@@ -273,6 +273,7 @@ std::string getMimeType(const std::string& path) {
     mimeTypes[".svg"] = "image/svg+xml";
     mimeTypes[".txt"] = "text/plain";
 
+
     std::string::size_type idx = path.find_last_of('.');
     if (idx != std::string::npos) {
         std::string extension = path.substr(idx);
@@ -285,7 +286,7 @@ std::string getMimeType(const std::string& path) {
 }
 
 void Api::handleFileDownload() {
-    std::string filePath = "www/" + _request->getNormalizedUri() + "/" + _request->getBasename();
+    std::string filePath = findRoute().location + "/" + _request->getBasename();
     std::ifstream inFile(filePath.c_str(), std::ios::binary);
 
     // TODO remove this
@@ -379,17 +380,17 @@ void Api::listDirectory(const std::string& directoryName) {
         // std::cout << "No debe ejecutar DirList!" << std::endl;
         return;
     }
-    std::string directoryPath = "www/" + directoryName;
+    // std::string directoryPath = _server->getServerRoot() + '/' + directoryName;
     std::stringstream html;
     html << "<html><body><h1>Directory Listing</h1><ul>";
 
     DIR *dir;
     struct dirent *ent;
-    if ((dir = opendir(directoryPath.c_str())) != NULL) {
+    if ((dir = opendir(directoryName.c_str())) != NULL) {
         while ((ent = readdir(dir)) != NULL) {
             std::string name = ent->d_name;
             if (name != "." && name != "..") {
-                html << "<li><a href=\"" << directoryName << "/" << name << "\">" << name << "</a></li>";
+                html << "<li><a href=\"" << findRoute().path << '/' << name << "\">" << name << "</a></li>";
             }
         }
         closedir(dir);
@@ -417,7 +418,7 @@ void Api::handleRequest(int client_socket) {
     if (normalizedUri.find("errors") == 0 && !_request->getBasename().empty()) {
         // TODO remove this
         // std::cout << "Entra y deberia devolver el archivo" << std::endl;
-        serveFile("www/" + normalizedUri + "/" + _request->getBasename());
+        serveFile(_server->getServerRoot() + '/' + normalizedUri + "/" + _request->getBasename());
         return;
     }
 
@@ -447,10 +448,10 @@ void Api::handleRoute(const Route& route) {
 			handleCGI(joinPaths(route.location, _request->getBasename()));
 			return;
 		}
-        if (!_request->getBasename().empty() || (_request->getBasename().empty() && (_request->getMethod() == "POST" || _request->getMethod() == "DELETE"))) {
+        if (!_request->getBasename().empty()) {
             handleFile();
         } else {
-            listDirectory(route.path);
+            listDirectory(route.location);
         }
     }
     sendResponse(_client_socket);
@@ -527,7 +528,7 @@ void Api::handleCGI(std::string path)
 }
 
 void Api::handleDirectoryOrError(const std::string& normalizedUri) {
-    std::string directoryPath = "www/" + normalizedUri;
+    std::string directoryPath = _server->getServerRoot() + '/' + normalizedUri;
 
     if (!directoryPath.empty() && directoryPath[directoryPath.size() - 1] == '/') {
         directoryPath.erase(directoryPath.size() - 1);

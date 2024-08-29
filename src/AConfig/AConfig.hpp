@@ -20,7 +20,6 @@ class AConfig
 
 		int		_http_location;
 		int		_server_location;
-		int		_errors_location;
 		int		_methods_location;
 		int		_routes_location;
 

@@ -57,7 +57,11 @@ void	Request::fillRequest(std::string str) {
 			_method = words[0];
 			std::string fullPath = words[1];
 
-			_query_string = fullPath.substr(fullPath.find("?") + 1);
+			size_t qmark = fullPath.find("?");
+			if (qmark != std::string::npos)
+				_query_string = fullPath.substr(qmark + 1);
+			else
+				_query_string.clear();
 			fullPath = fullPath.substr(0, fullPath.find("?"));
 
 			if (!fullPath.empty() && fullPath[0] == '/') {
